@@ -36,4 +36,4 @@ Initial private release.
 - Integration with early OpenAI models.
 
 ---
-*Stay Sovereign.* 🐺
+*Stay Sovereign.*

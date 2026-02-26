@@ -1,6 +1,6 @@
 # Wolfclaw: The Sovereign AI Agent Orchestrator
 
-![Wolfclaw Logo](wolfclaw/static/img/wolfclaw-logo.png)
+![Wolfclaw Logo](static/img/wolfclaw-logo.png)
 
 [![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 [![Python: 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
@@ -13,7 +13,7 @@
 
 ---
 
-## 🐺 The Essence of Wolfclaw
+## The Essence of Wolfclaw
 
 Wolfclaw is founded on the principle of **Digital Sovereignty**. In an era of centralized AI, Wolfclaw returns control to the user. It is not just a tool; it is a declaration of independence for your data and your digital agents.
 
@@ -25,7 +25,7 @@ Wolfclaw is founded on the principle of **Digital Sovereignty**. In an era of ce
 
 ---
 
-## 🌎 Global Ecosystem Positioning (Market Differentiation)
+## Global Ecosystem Positioning (Market Differentiation)
 
 While the broader ecosystem is populated with various "agentic kernels" and "channel gateways," Wolfclaw occupies a unique **Orchestration Tier** that separates it from standard AI implementations.
 
@@ -45,7 +45,7 @@ While the broader ecosystem is populated with various "agentic kernels" and "cha
 
 ---
 
-## 🏎️ Architecture Overview
+## Architecture Overview
 
 The Wolfclaw engine utilize a high-performance multiplexing layer for maximum throughput and agent responsiveness.
 
@@ -66,7 +66,7 @@ For technical specifications, see the [Technical Guide (guide.md)](guide.md).
 
 ---
 
-## 🚀 Deployment
+## Deployment
 
 ### Prerequisites
 - Python 3.11 or higher
@@ -95,9 +95,9 @@ For users requiring pre-packaged environments, Wolfclaw is available in the foll
 
 ---
 
-## ⚖️ Legal Framework & Disclaimers
+## Legal Framework & Disclaimers
 
-### ⚠️ CYBERSECURITY WARNING & USER RESPONSIBILITY
+### CYBERSECURITY WARNING & USER RESPONSIBILITY
 **By deploying Wolfclaw or using its binary distributions (.exe, .deb, .msi), you explicitly acknowledge and agree to the following:**
 
 1.  **High-Risk Execution Intelligence**: Wolfclaw is an autonomous agentic framework capable of executing low-level terminal commands, modifying system registries (in Windows Legacy builds), and managing network traffic. If misconfigured or used without oversight, it poses a **significant cybersecurity threat** to your host machine and network.
@@ -105,12 +105,12 @@ For users requiring pre-packaged environments, Wolfclaw is available in the foll
 3.  **Command Authorization**: You are **solely and exclusively responsible** for the actions taken by agents. The "Digital Soul" configuration grants the AI the power to interact with your OS; you must audit all agent behaviors.
 4.  **No Guarantee of Accuracy**: AI-generated logic is non-deterministic. The developers do not guarantee that agent actions will be safe, predictable, or error-free.
 
-### 🚫 LIMITATION OF LIABILITY
+### LIMITATION OF LIABILITY
 **IN NO EVENT SHALL THE DEVELOPERS (INCLUDING PRAVIN A MATHEW), CONTRIBUTORS, OR AFFILIATED PARTIES BE LIABLE FOR ANY DAMAGES WHATSOEVER** (including, without limitation, direct, indirect, special, incidental, or consequential damages; loss of data, profits, or business interruption) arising out of the use of or inability to use this software, even if advised of the possibility of such damage. This software is provided **"AS IS"** and any express or implied warranties are disclaimed.
 
 ---
 
-## 🤝 Support & Development
+## Support & Development
 
 Wolfclaw is a labor of obsession towards digital freedom. To support the continued development of the sovereign AI ecosystem, consider a contribution to the mission.
 
@@ -119,7 +119,7 @@ Wolfclaw is a labor of obsession towards digital freedom. To support the continu
 
 ---
 
-## 📄 License & Governance
+## License & Governance
 
 Wolfclaw is a professional-grade project governed by international standards.
 
@@ -132,5 +132,5 @@ Wolfclaw is a professional-grade project governed by international standards.
 Copyright (c) 2026 Sovereign AI Lab. All rights reserved.
 
 ---
-*Wolfclaw: Crafted with Intent by Pravin A Mathew* 🐺
+*Wolfclaw: Crafted with Intent by Pravin A Mathew*
 <!-- Ref: PAM-Sovereign-Orchestration-v2 -->

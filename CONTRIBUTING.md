@@ -31,4 +31,4 @@ By participating in this project, you are expected to uphold our [Code of Conduc
 Contributors who make significant impact may be invited to the "Sovereign Pack" listed in the `README.md`.
 
 ---
-*Build with intent.* 🐺
+*Build with intent.*

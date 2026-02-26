@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from ui.views import login_view, dashboard_view
 
-st.set_page_config(page_title="Wolfclaw", page_icon="🐺", layout="centered")
+st.set_page_config(page_title="Wolfclaw", layout="centered")
 
 def main():
     try:

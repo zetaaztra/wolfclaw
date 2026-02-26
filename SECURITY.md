@@ -33,4 +33,4 @@ If you discover a security vulnerability within Wolfclaw, please do **not** open
 We ask that you observe "Responsible Disclosure" practices—giving the development team reasonable time to address the issue before making it public.
 
 ---
-*Stay Sovereign. Stay Secure.* 🐺
+*Stay Sovereign. Stay Secure.*

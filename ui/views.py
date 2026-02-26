@@ -13,7 +13,7 @@ from core.bot_manager import save_bot, get_bots, delete_bot, save_bot_token, rea
 # ─────────────────────────── LOGIN ───────────────────────────
 
 def login_view():
-    st.title("🐺 Wolfclaw Login")
+    st.title("Wolfclaw Login")
     st.info(
         "**Welcome to Wolfclaw!**\n\n"
         "Wolfclaw is your personal AI command center. It lets you:\n"
@@ -208,7 +208,7 @@ def bot_creator_view():
         fallback_options = [m for m in all_models if m != model_choice]
         fallback_models = st.multiselect("Fallback Models", fallback_options, default=[], key="fallback_select")
     
-    if st.button("🚀 Save & Deploy Bot", type="primary"):
+    if st.button("Save & Deploy Bot", type="primary"):
         new_id = str(uuid.uuid4())
         try:
             save_bot(new_id, bot_name, model_choice, system_prompt, fallback_models=fallback_models)
@@ -644,7 +644,7 @@ When user asks to find/apply for jobs:
 # ─────────────────────────── DASHBOARD ───────────────────────────
 
 def dashboard_view():
-    st.sidebar.title("🐺 Wolfclaw")
+    st.sidebar.title("Wolfclaw")
     st.sidebar.caption("Your personal AI command center")
     
     # Check for navigation override (from "Go to Manage Bots" button)
