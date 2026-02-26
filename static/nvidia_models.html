@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nvidia NIM Models — Wolfclaw Reference</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0d1117;
+            --card-bg: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent: #76b900;
+            --accent-dark: #5a8f00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .tip-box {
+            background: var(--card-bg);
+            border: 1px solid var(--accent);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .tip-box h3 {
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .tip-box code {
+            background: #0d1117;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #f0883e;
+            font-size: 0.9em;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .model-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            transition: all 0.2s;
+        }
+
+        .model-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(118, 185, 0, 0.1);
+        }
+
+        .model-card h4 {
+            color: #fff;
+            margin-bottom: 4px;
+            font-size: 0.95em;
+        }
+
+        .model-card .vendor {
+            color: var(--accent);
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .model-card .desc {
+            color: var(--text-muted);
+            font-size: 0.82em;
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+
+        .model-card .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .tag {
+            font-size: 0.7em;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(118, 185, 0, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(118, 185, 0, 0.3);
+        }
+
+        .litellm-id {
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 0.8em;
+            color: #f0883e;
+            background: #0d1117;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .back-btn {
+            display: inline-block;
+            color: var(--accent);
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Wolfclaw</a>
+        <h1><i class="fa-solid fa-microchip"></i> Nvidia NIM Model Hub</h1>
+        <p class="subtitle">Reference guide for all Nvidia NIM models you can use with Wolfclaw via LiteLLM.</p>
+
+        <div class="tip-box">
+            <h3><i class="fa-solid fa-lightbulb"></i> How to Use</h3>
+            <p style="margin-bottom:8px;">1. Go to <strong>Settings</strong> and save your Nvidia API key
+                (<code>nvapi-...</code>).</p>
+            <p style="margin-bottom:8px;">2. When creating a bot, set the model to the <strong>LiteLLM ID</strong> shown
+                below, e.g. <code>nvidia_nim/meta/llama-3.1-70b-instruct</code>.</p>
+            <p>3. Wolfclaw routes the request through LiteLLM → Nvidia NIM automatically. 🚀</p>
+        </div>
+
+        <input type="text" class="search-input" id="model-search"
+            placeholder="🔍 Search models by name, vendor, or capability..." oninput="filterModels()">
+
+        <div class="model-grid" id="model-grid"></div>
+    </div>
+
+    <script>
+        const MODELS = [
+            { vendor: "Nvidia", name: "Llama 3.1 Nemotron Ultra 253B", litellm: "nvidia_nim/nvidia/llama-3.1-nemotron-ultra-253b-v1", desc: "State-of-the-art reasoning model with 253B parameters.", tags: ["Reasoning", "Large"] },
+            { vendor: "Nvidia", name: "Llama Nemotron Embed VL 1B v2", litellm: "nvidia_nim/nvidia/llama-nemotron-embed-vl-1b-v2", desc: "Multimodal question-answer retrieval for text and image documents.", tags: ["Embedding", "Multimodal"] },
+            { vendor: "Nvidia", name: "Cosmos Reason 2 8B", litellm: "nvidia_nim/nvidia/cosmos-reason2-8b", desc: "Vision language model for physical world reasoning.", tags: ["Vision", "Reasoning"] },
+            { vendor: "Meta", name: "Llama 3.3 Nemotron Super 49B v1", litellm: "nvidia_nim/meta/llama-3.3-nemotron-super-49b-v1", desc: "High accuracy 49B model optimized for single-GPU deployment.", tags: ["Chat", "Efficient"] },
+            { vendor: "Meta", name: "Llama 3.1 70B Instruct", litellm: "nvidia_nim/meta/llama-3.1-70b-instruct", desc: "Multilingual large language model optimized for dialogue.", tags: ["Chat", "Multilingual"] },
+            { vendor: "Meta", name: "Llama 3.1 8B Instruct", litellm: "nvidia_nim/meta/llama-3.1-8b-instruct", desc: "Lightweight 8B model for efficient inference.", tags: ["Chat", "Lightweight"] },
+            { vendor: "Meta", name: "Llama 3.3 70B Instruct", litellm: "nvidia_nim/meta/llama-3.3-70b-instruct", desc: "Latest Meta flagship with text-only capabilities.", tags: ["Chat", "Latest"] },
+            { vendor: "Qwen", name: "Qwen 3.5 397B A17B", litellm: "nvidia_nim/qwen/qwen3.5-397b-a17b", desc: "Next-gen Qwen 3.5 VLM (400B MoE) for vision, chat, RAG, and agentic tasks.", tags: ["MoE", "VLM", "Agentic"] },
+            { vendor: "Qwen", name: "QwQ 32B", litellm: "nvidia_nim/qwen/qwq-32b", desc: "Advanced reasoning model with step-by-step problem solving.", tags: ["Reasoning", "32B"] },
+            { vendor: "Z-AI", name: "GLM-5", litellm: "nvidia_nim/z-ai/glm5", desc: "744B MoE for reasoning in complex systems and agentic tasks.", tags: ["Agentic", "MoE", "Reasoning"] },
+            { vendor: "MoonshotAI", name: "Kimi K2.5", litellm: "nvidia_nim/moonshotai/kimi-k2.5", desc: "1T multimodal MoE for video and image understanding.", tags: ["MoE", "Multimodal", "Video"] },
+            { vendor: "DeepSeek", name: "DeepSeek R1", litellm: "nvidia_nim/deepseek-ai/deepseek-r1", desc: "Advanced reasoning model with transparent thought process.", tags: ["Reasoning", "Open"] },
+            { vendor: "Google", name: "Gemma 3 27B IT", litellm: "nvidia_nim/google/gemma-3-27b-it", desc: "Compact vision-language model from Google.", tags: ["VLM", "Compact"] },
+            { vendor: "Microsoft", name: "Phi-4 Reasoning Plus", litellm: "nvidia_nim/microsoft/phi-4-reasoning-plus", desc: "Enhanced reasoning capabilities in a compact model.", tags: ["Reasoning", "Compact"] },
+            { vendor: "Writer", name: "Palmyra X5", litellm: "nvidia_nim/writer/palmyra-x5", desc: "Enterprise-grade model for complex business tasks.", tags: ["Enterprise", "Business"] },
+            { vendor: "Mistral", name: "Mistral Large 2", litellm: "nvidia_nim/mistralai/mistral-large-2-instruct", desc: "Mistral's flagship model for complex multi-step tasks.", tags: ["Chat", "Large"] },
+            { vendor: "Nvidia", name: "Nemotron 4 340B Instruct", litellm: "nvidia_nim/nvidia/nemotron-4-340b-instruct", desc: "Nvidia's own massive 340B parameter model.", tags: ["Chat", "Large"] },
+            { vendor: "Nvidia", name: "NVLM 1.0 72B", litellm: "nvidia_nim/nvidia/nvlm-1.0-72b", desc: "Frontier-class multimodal model for vision and language.", tags: ["VLM", "Frontier"] },
+        ];
+
+        function renderModels(models) {
+            const grid = document.getElementById('model-grid');
+            grid.innerHTML = models.map(m => `
+            <div class="model-card">
+                <span class="vendor">${m.vendor}</span>
+                <h4>${m.name}</h4>
+                <p class="desc">${m.desc}</p>
+                <div class="tags">${m.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+                <div class="litellm-id" title="Copy this to use in Wolfclaw">${m.litellm}</div>
+            </div>
+        `).join('');
+        }
+
+        function filterModels() {
+            const q = document.getElementById('model-search').value.toLowerCase();
+            const filtered = MODELS.filter(m =>
+                m.name.toLowerCase().includes(q) ||
+                m.vendor.toLowerCase().includes(q) ||
+                m.desc.toLowerCase().includes(q) ||
+                m.tags.some(t => t.toLowerCase().includes(q)) ||
+                m.litellm.toLowerCase().includes(q)
+            );
+            renderModels(filtered);
+        }
+
+        renderModels(MODELS);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,356 @@
+GIT->Jenkins->Maven (jar/var)->Trivy(Security Check)->Sonar Qube(Code Analysis)->Docker Imager-Docker Conatiner
+
+
+ 1 step->Java ,Jenkins,Docker,Trivy
+
+ 2 step->Docker,sonarqube
+=====================================================================
+Installation Packages
+JAVA_JENKINS_DOCKER_TRIVY
+
+#Install Jenkins
+sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc]" \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update
+sudo apt-get install jenkins -y
+
+sudo apt install openjdk-17-jre-headless -y
+
+# Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo docker run hello-world
+
+# Install GIT
+sudo apt install git -y
+
+#Install trivy
+sudo apt-get install wget apt-transport-https gnupg lsb-release
+wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+sudo apt-get update
+sudo apt-get install trivy
+
+=================================================================
+GROOVY SCRIPT
+=================================================================
+pipeline {
+    agent any
+    
+    tools {
+        jdk 'jdk17'
+        maven 'maven3'
+    }
+    
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
+    }
+    
+    stages {
+        stage('GIT CHECKOUT') {
+            steps {
+                git branch: 'main', url: 'https://github.com/zetaaztra/Vivek-s-Gaming-Application.git'
+            }
+        }
+        
+        stage('MAVEN COMPILE') {
+            steps {
+                sh "mvn compile"
+            }
+        }
+        
+        stage('MAVEN TEST') {
+            steps {
+                sh "mvn test"
+            }
+        }
+        
+        stage('TRIVY FILESYSTEM SCAN') {
+            steps {
+                sh "trivy fs --format table -o trivy-fs-report.html ."
+            }
+        }
+        
+        stage('SONARQUBE ANALYSIS') {
+            steps {
+                withSonarQubeEnv('sonar') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Gaming -Dsonar.projectKey=Gaming\
+                            -Dsonar.java.binaries=. '''
+                }
+            }
+        }
+        
+        stage('QUALITY GATE') {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token' 
+                }
+            }
+        }
+        
+        stage('MAVEN BUILD') {
+            steps {
+                sh "mvn package"
+            }
+        }
+        
+        stage('BUILD & TAG DOCKER IMAGE') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                        sh "docker build -t VM2322/gaming ."
+                    }
+                }
+            }
+        }
+        
+        stage('IMAGE SCANNING') {
+            steps {
+                sh "trivy image --format table -o trivy-image-report.html VM2322/gaming"
+            }
+        }
+        
+        stage('DOCKER DEPLOYMENT') {
+            steps {
+                sh "docker run -d -p 8093:8080 VM2322/gaming"
+            }
+        }
+    }
+}
+======================================================================================================
+
+STEP BY STEP
+
+================================================================================================
+
+Project Commands
+sudo systemctl enable jenkins
+sudo systemctl start jenkins
+sudo systemctl status jenkins
+
+Go to Jenkins Install these Below Plugins:
+Manage Jenkins >Plugins> Available Plugins
+*Pipeline Stage View Plugin.
+*Maven integration
+*Config File provider
+*Sonarqube Scanner
+*Docker
+*Docker Pipeline
+*Docker Commons
+*Eclipse Temurin Installer
+
+Go to Jenkins and Configure the Tools
+Dashborad-->Manage Jenkins-->Tools
+1)JDK install
+Add JDK
+jdk17
+Install automatically
+Install from adoptium.net
+Install any version from 17 jdk-17.0.9+9
+
+2)SonarQube Scanner
+sonar-scanner
+version 6.1.0.4477
+
+3)Maven
+Maven3
+install automatically
+version 3.9.8
+
+4)Docker
+docker
+install automaticllay
+latest
+
+Save and Apply
+
+CREATE SECOND INSTANCE and Install
+vi docker.sh
+ll
+chmod +x docker.sh
+./docker.sh
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo docker run hello-world
+sudo docker run -d --name sonar -p 9000:9000 sonarqube:lts-community
+ip:9000
+
+admin
+admin....password
+
+Now to integrate SonarQube With jenkins
+
+now creating a webhook in sonarqube 
+admin>config>webhook
+create 
+name:
+ip:8080/sonarqube-webhooks
+
+
+
+
+Manage JENKINS>>TOOLS
+SONARQUBE
+sonar
+sonarqube scanner-6.0.0.4432
+go to sonarqube administration)
+users-->tokens generate(In admin box)
+save it-->squ_b2a81c961526b4f8d06fd0c95a7dbe7c325ba8d7
+Now to add the token to Jenkins
+mange jenkins-->security->Credentials->system->global cred
+
+Mange jenkins>credentials>system>global crendentials
+kind>secret text
+scope>global
+secret>enter token
+
+Manage Jenkins>system>sonarqube installations
+Name>sonarqube-scanner
+url>url of sonarqube ip:9000
+server auth token>sonar-token
+
+Give Sonarqube-weekhook not hooks
+In jenins credentials
+docker-cred
+username
+password
+Id:docker-cres (whatever is given in groovy script)
+manage jenkins->system->sonarqube servers
+sonarqube installations
+name:sonar
+ip:9000
+server authentication token
+save and apply
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BY,
+PRAVIN ABDIEL MATHITYAHU
+AKA
+PRAVIN A MATHEW
+ZETA AZTRA TECH SOLUTIONS

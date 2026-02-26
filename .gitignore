@@ -1,0 +1,45 @@
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller / Build artifacts
+dist/
+build/
+*.spec
+*.log
+*.exe
+*.deb
+*.msi
+
+# Massive Folders (Working copies / Build results)
+Wolfclaw-Worked/
+wolfclaw_legacy/build/
+wolfclaw_legacy/dist/
+nanoclaw/build/
+nanoclaw/dist/
+
+# Database / Local State
+*.sqlite
+*.sqlite3
+wolfclaw_local.db
+~/.wolfclaw/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db

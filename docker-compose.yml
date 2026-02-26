@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  wolfclaw:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      # Required for Authentication
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+    volumes:
+      # Mount the local config directory so API keys persist across container restarts
+      - ~/.wolfclaw:/root/.wolfclaw
