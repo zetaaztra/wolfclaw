@@ -1,6 +1,8 @@
 # Wolfclaw: The Sovereign AI Agent Orchestrator
 
-<img src="static/img/wolfclaw-logo.png" alt="Wolfclaw Logo" width="150">
+<div align="center">
+  <img src="static/img/wolfclaw-logo.png" alt="Wolfclaw Logo" width="150">
+</div>
 
 [![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 [![Python: 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
