@@ -111,7 +111,7 @@ For users requiring pre-packaged environments, Wolfclaw is available in the foll
 4.  **No Guarantee of Accuracy**: AI-generated logic is non-deterministic. The developers do not guarantee that agent actions will be safe, predictable, or error-free.
 
 ### LIMITATION OF LIABILITY
-**IN NO EVENT SHALL THE DEVELOPERS (INCLUDING PRAVIN A MATHEW), CONTRIBUTORS, OR AFFILIATED PARTIES BE LIABLE FOR ANY DAMAGES WHATSOEVER** (including, without limitation, direct, indirect, special, incidental, or consequential damages; loss of data, profits, or business interruption) arising out of the use of or inability to use this software, even if advised of the possibility of such damage. This software is provided **"AS IS"** and any express or implied warranties are disclaimed.
+**IN NO EVENT SHALL THE DEVELOPERS , CONTRIBUTORS, OR AFFILIATED PARTIES BE LIABLE FOR ANY DAMAGES WHATSOEVER** (including, without limitation, direct, indirect, special, incidental, or consequential damages; loss of data, profits, or business interruption) arising out of the use of or inability to use this software, even if advised of the possibility of such damage. This software is provided **"AS IS"** and any express or implied warranties are disclaimed.
 
 ---
 
@@ -141,7 +141,7 @@ Wolfclaw is a professional-grade project governed by international standards.
 - **[Code of Conduct](CODE_OF_CONDUCT.md)**: Community standards.
 - **[Changelog](CHANGELOG.md)**: History of evolution.
 
-Copyright (c) 2026 Pravin A Mathew. All rights reserved.
+Copyright (c) 2026 . All rights reserved.
 
 ---
 *Wolfclaw: Developed with Vision by Pravin A Mathew*
