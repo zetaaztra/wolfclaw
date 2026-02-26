@@ -11,7 +11,7 @@
 [![Security: Audited](https://img.shields.io/badge/Security-Audited-brightgreen.svg)](SECURITY.md)
 [![PRs: Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**Wolfclaw** is a high-fidelity **Enterprise-Grade Sovereign Agentic Orchestrator (ESAO)** designed for the strategic deployment of autonomous digital workforces. Engineered with a "Privacy-by-Design" philosophy, it serves as the definitive control plane for organizations and individuals who require local-first execution of complex, multi-agent reasoning chains without compromising security or data sovereignty.
+**Wolfclaw** is your personal command center for private AI agents. It lets you build and manage a team of smart bots that live on your own computer, keeping your data safe and private while helping you automate your work.
 
 ---
 
