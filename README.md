@@ -128,14 +128,14 @@ Wolfclaw is a labor of obsession towards digital freedom. To support the continu
 
 Wolfclaw is a professional-grade project governed by international standards.
 
-- **[License](LICENSE)**: Proprietary License.
+- **[License](LICENSE)**: MIT License.
 - **[Security Policy](SECURITY.md)**: Vulnerability disclosure and reporting.
 - **[Contributing](CONTRIBUTING.md)**: Guidelines for involvement.
 - **[Code of Conduct](CODE_OF_CONDUCT.md)**: Community standards.
 - **[Changelog](CHANGELOG.md)**: History of evolution.
 
-Copyright (c) 2026 Sovereign AI Lab. All rights reserved.
+Copyright (c) 2026 Pravin A Mathew. All rights reserved.
 
 ---
-*Wolfclaw: Crafted with Intent by Pravin A Mathew*
+*Wolfclaw: Developed with Vision by Pravin A Mathew*
 <!-- Ref: PAM-Sovereign-Orchestration-v2 -->

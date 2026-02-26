@@ -61,5 +61,5 @@ Unlike stateless chatbots, Wolfclaw agents maintain state.
 - **RBAC**: Role-Based Access Control ensures that multi-tenant deployments maintain strict user isolation.
 
 ---
-*End of Guide. Maintain the Professional Standard.*
+*End of Guide. Copyright (c) 2026 Pravin A Mathew.*
 <!-- Auth: Pravin A Mathew | Ref: PAM-Sovereign-Orchestration-v2 -->
