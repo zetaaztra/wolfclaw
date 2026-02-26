@@ -139,15 +139,19 @@ def _get_scheduler():
             _scheduler.start()
             logger.info("APScheduler started.")
             
-            # Load and register all active tasks
-            try:
-                ws_id = _get_active_workspace_id()
-                tasks = local_db.get_scheduled_tasks(ws_id)
-                for task in tasks:
-                    if task.get('is_active'):
-                        _register_task_with_scheduler(task['id'])
-            except:
-                pass
+            # Load and register all active tasks in a background thread
+            def _load_all_tasks():
+                try:
+                    ws_id = _get_active_workspace_id()
+                    tasks = local_db.get_scheduled_tasks(ws_id)
+                    for task in tasks:
+                        if task.get('is_active'):
+                            _register_task_with_scheduler(task['id'])
+                except:
+                    pass
+            
+            import threading
+            threading.Thread(target=_load_all_tasks, daemon=True).start()
                 
         except ImportError:
             logger.warning("apscheduler not installed. Scheduled tasks will only work with manual trigger.")
@@ -257,7 +261,7 @@ def _execute_task(task: dict):
 
 
 # Auto-start scheduler on import
-try:
-    _get_scheduler()
-except:
-    pass
+# try:
+#     _get_scheduler()
+# except:
+#     pass

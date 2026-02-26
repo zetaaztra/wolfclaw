@@ -117,10 +117,9 @@ For users requiring pre-packaged environments, Wolfclaw is available in the foll
 
 ## Support & Development
 
-Wolfclaw is a labor of obsession towards digital freedom. To support the continued development of the sovereign AI ecosystem, consider a contribution to the mission.
+Wolfclaw is a labor of obsession towards digital freedom. To support the mission and the development of the sovereign AI ecosystem, please see our support page.
 
-*   **Ethereum**: `0x7d5F756053c74CbAEBE47CEce29e9842ec151323`
-*   **Bitcoin**: `bc1qyvt56w363uu3kd2lz36ep4useushrcmeagt2pa`
+- **[Support & Development](SUPPORT.md)**: Contribution channels and mission details.
 
 ---
 

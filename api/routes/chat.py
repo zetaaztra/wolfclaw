@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import List, Dict, Optional
 import os
 
-from core.llm_engine import WolfEngine
+# from core.llm_engine import WolfEngine
 from core import bot_manager
 from api.deps import get_current_user
 
@@ -75,6 +75,7 @@ async def send_message(req: ChatRequest, user: dict = Depends(get_current_user))
             logging.getLogger(__name__).warning(f"KB injection failed: {kb_err}")
         
         # Initialize the engine with the bot's model and fallbacks
+        from core.llm_engine import WolfEngine
         engine = WolfEngine(
             bot["model"],
             fallback_models=bot.get("fallback_models", [])

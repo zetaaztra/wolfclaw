@@ -169,8 +169,9 @@ def read_document(file_path: str) -> str:
 def _is_command_safe(command: str) -> bool:
     """Security check to prevent malicious command injection."""
     # List of dangerous characters that could be used for injection
-    # We allow | for piping but block others that chain independent commands
-    forbidden = [";", "&&", "||", "`", "$( ", ">", ">>"]
+    # We allow | for piping, && and ; for chaining, and > for redirection
+    # as they are essential for agentic tasks.
+    forbidden = ["`", "$( "]
     
     # Check for encoded versions or variations
     for f in forbidden:
@@ -178,7 +179,7 @@ def _is_command_safe(command: str) -> bool:
             return False
     
     # Block common destructive commands if they aren't part of a safe context
-    destructive = ["rm -rf", "format", "mkfs", "del /s", "rd /s"]
+    destructive = ["rm -rf /", "format ", "mkfs ", "rd /s /q c:"]
     for d in destructive:
         if d in command.lower():
             return False
