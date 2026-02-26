@@ -13,17 +13,20 @@
 
 **Wolfclaw** is your personal command center for private AI agents. It lets you build and manage a team of smart bots that live on your own computer, keeping your data safe and private while helping you automate your work.
 
+Think of Wolfclaw as a secure "digital office." Instead of just one generic chatbot, you can have a whole team of specialized assistants—one for writing, one for research, one for technical work—all working together for you in a way that respects your privacy.
+
 ---
 
-## The Essence of Wolfclaw
+## What can Wolfclaw do for you?
 
-Wolfclaw is founded on the principle of **Digital Sovereignty**. In an era of centralized AI, Wolfclaw returns control to the user. It is not just a tool; it is a declaration of independence for your data and your digital agents.
+Wolfclaw is built for people who want the power of AI without the risks of sharing their data.
 
-*   **Local-First Architecture**: Your data never leaves your system unless you explicitly permit it.
-*   **Visual Strategy Room**: Design complex, multi-agent workflows using a high-premium, node-based interface.
-*   **Soul Persistence**: Agents evolve with long-term memory and distinct personalities, stored locally.
-*   **War Room Orchestration**: Coordinate a pack of specialized agents to tackle monumental challenges.
-*   **Hardware Agnostic**: Seamlessly bridge between local Ollama instances and high-performance cloud providers like NVIDIA NIM.
+*   **Total Privacy**: Everything stays on your machine. Your thoughts, files, and secrets are never sent to a big tech company's cloud. 
+*   **Smart Memory**: Unlike other AI, Wolfclaw agents actually "remember" you. They get better at their jobs as they learn how you work and what you prefer.
+*   **Visual Control**: Use a beautiful, easy-to-understand dashboard to see how your bots are thinking. It’s like having a "War Room" for your projects.
+*   **Fast and Local**: If you have a powerful computer, you can run everything for free without paying for expensive monthly subscriptions. 
+
+---
 
 ---
 
