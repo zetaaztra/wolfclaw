@@ -125,9 +125,9 @@ Wolfclaw is a labor of obsession towards digital freedom. To support the mission
 
 ## Credits & Attributions
 
-Wolfclaw draws inspiration from the pioneering work of the open-source community, specifically:
-- **OpenClaw**: For the conceptual foundations of agentic orchestration.
-- **Pravin A Mathew**: Lead Architect and primary developer of the Wolfclaw Sovereign Pack.
+Wolfclaw is built upon and draws deep inspiration from:
+- **OpenClaw**: The original architecture and implementation that discovered the paradigms of local-first agentic orchestration.
+- **Sovereign AI Community**: For the continued evolution of digital freedom tools.
 
 ---
 
@@ -141,8 +141,8 @@ Wolfclaw is a professional-grade project governed by international standards.
 - **[Code of Conduct](CODE_OF_CONDUCT.md)**: Community standards.
 - **[Changelog](CHANGELOG.md)**: History of evolution.
 
-Copyright (c) 2026 . All rights reserved.
+Copyright (c) 2026 Zeta Aztra Technologies. All rights reserved.
 
 ---
-*Wolfclaw: Developed with Vision by Pravin A Mathew*
-<!-- Ref: PAM-Sovereign-Orchestration-v2 -->
+*Wolfclaw: Crafted with Vision for Sovereign AI by Pravin A Mathew*
+<!-- Author: Pravin A Mathew | Zeta Aztra Technologies -->

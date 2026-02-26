@@ -1,3 +1,7 @@
+"""
+Wolfclaw: High-Performance LLM Routing Engine
+Crafted with Intent by Pravin A Mathew | Zeta Aztra Technologies
+"""
 import os
 import re
 import json
