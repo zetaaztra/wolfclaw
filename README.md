@@ -127,7 +127,6 @@ Wolfclaw is a labor of obsession towards digital freedom. To support the mission
 
 Wolfclaw draws inspiration from the pioneering work of the open-source community, specifically:
 - **OpenClaw**: For the conceptual foundations of agentic orchestration.
-- **Pravin A Mathew**: Lead Architect and primary developer of the Wolfclaw Sovereign Pack.
 
 ---
 
@@ -141,7 +140,7 @@ Wolfclaw is a professional-grade project governed by international standards.
 - **[Code of Conduct](CODE_OF_CONDUCT.md)**: Community standards.
 - **[Changelog](CHANGELOG.md)**: History of evolution.
 
-Copyright (c) 2026 . All rights reserved.
+Copyright (c) 2026 Pravin A Mathew. All rights reserved.
 
 ---
 *Wolfclaw: Developed with Vision by Pravin A Mathew*
