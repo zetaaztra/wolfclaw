@@ -1,0 +1,1 @@
+import os, hashlib, secrets; from core import local_db; salt=secrets.token_hex(8); ph=hashlib.sha256(salt.encode() + b'password').hexdigest() + ':' + salt; user=local_db.get_user('pravinved613@gmail.com'); local_db.update_user_password(user['id'], ph); print('Password reset to password')

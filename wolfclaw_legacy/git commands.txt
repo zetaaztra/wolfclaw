@@ -1,0 +1,7 @@
+
+git init
+git add .
+git commit -m "HaShem Melech Ha Olam Help Me with this 3 Commit"
+git branch -M main
+git remote add origin https://github.com/zetaaztra/wolfclaw.git
+git push -u origin main
