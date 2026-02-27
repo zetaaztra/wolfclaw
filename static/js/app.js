@@ -265,7 +265,9 @@ async function handleRecovery(e) {
 // ==========================================
 
 async function loadBots() {
-    const resp = await fetch(`${API_BASE}/bots/`);
+    const resp = await fetch(`${API_BASE}/bots/`, {
+        headers: getAuthHeader()
+    });
     const data = await resp.json();
     if (resp.ok) {
         activeBots = data.bots;
@@ -281,7 +283,9 @@ async function renderBotTable() {
     // Fetch live Telegram worker status
     let workerStatus = {};
     try {
-        const statusResp = await fetch(`${API_BASE}/channels/telegram/status`);
+        const statusResp = await fetch(`${API_BASE}/channels/telegram/status`, {
+            headers: getAuthHeader()
+        });
         const statusData = await statusResp.json();
         if (statusResp.ok) workerStatus = statusData.workers || {};
     } catch (e) { }
@@ -323,7 +327,10 @@ async function handleCreateBot(e) {
 
     const resp = await fetch(`${API_BASE}/bots/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            ...getAuthHeader(),
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ name, model, prompt })
     });
 
@@ -346,7 +353,9 @@ let currentChatId = null; // Phase 11 tracking
 
 async function loadChatBots() {
     try {
-        const resp = await fetch(`${API_BASE}/chat/bots`);
+        const resp = await fetch(`${API_BASE}/chat/bots`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         if (resp.ok) {
             const select = document.getElementById('chat-bot-select');
@@ -423,7 +432,10 @@ async function sendMessage() {
     try {
         const resp = await fetch(`${API_BASE}/chat/send`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ bot_id: chatBotId, messages: chatMessages })
         });
 
@@ -581,7 +593,10 @@ async function refineResponse(instruction) {
     try {
         const resp = await fetch(`${API_BASE}/chat/send`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ bot_id: chatBotId, messages: chatMessages })
         });
         const data = await resp.json();
@@ -620,7 +635,10 @@ async function saveToFavorites(btn) {
     try {
         const resp = await fetch(`${API_BASE}/favorites/`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ bot_name: botName, content: bubbleContent })
         });
 
@@ -647,7 +665,9 @@ async function loadSavedResponses() {
     gallery.innerHTML = '<p style="color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading saved responses...</p>';
 
     try {
-        const resp = await fetch(`${API_BASE}/favorites/`);
+        const resp = await fetch(`${API_BASE}/favorites/`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         if (resp.ok) {
             renderSavedGallery(data.favorites);
@@ -698,7 +718,10 @@ async function deleteSavedResponse(favId) {
     if (!confirm('Are you sure you want to delete this saved response?')) return;
 
     try {
-        const resp = await fetch(`${API_BASE}/favorites/${favId}`, { method: 'DELETE' });
+        const resp = await fetch(`${API_BASE}/favorites/${favId}`, {
+            method: 'DELETE',
+            headers: getAuthHeader()
+        });
         if (resp.ok) {
             loadSavedResponses();
         } else {
@@ -718,7 +741,9 @@ let activeSshServerId = null;
 
 async function loadSSHServers() {
     try {
-        const resp = await fetch(`${API_BASE}/remote/servers`);
+        const resp = await fetch(`${API_BASE}/remote/servers`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         if (resp.ok && data.servers) {
             sshServers = data.servers;
@@ -851,7 +876,10 @@ async function saveSSHConfig() {
     try {
         const resp = await fetch(`${API_BASE}/remote/servers`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ id: id || null, name, host, port, user, password, key_content: sshPemContent })
         });
         const data = await resp.json();
@@ -873,7 +901,8 @@ async function deleteSSHServer() {
 
     try {
         const resp = await fetch(`${API_BASE}/remote/servers/${activeSshServerId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: getAuthHeader()
         });
         if (resp.ok) {
             activeSshServerId = null;
@@ -900,7 +929,10 @@ async function testSSHConnection() {
     try {
         const resp = await fetch(`${API_BASE}/remote/test`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ host, port, user, password, key_content: sshPemContent })
         });
         const data = await resp.json();
@@ -941,7 +973,10 @@ async function spawnDedicatedSshBot() {
     try {
         const botResp = await fetch(`${API_BASE}/bots`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(payload)
         });
         const botData = await botResp.json();
@@ -951,7 +986,10 @@ async function spawnDedicatedSshBot() {
 
         const tgResp = await fetch(`${API_BASE}/channels/telegram/token`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ bot_id: botId, token: token })
         });
 
@@ -1003,7 +1041,10 @@ async function sendSSHChatMessage() {
     try {
         const resp = await fetch(`${API_BASE}/chat/send`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ bot_id: fallbackBotId, messages: tempMessages })
         });
 
@@ -1099,7 +1140,9 @@ async function loadBotProfile() {
     }
 
     try {
-        const resp = await fetch(`${API_BASE}/bots/${botId}/profile`);
+        const resp = await fetch(`${API_BASE}/bots/${botId}/profile`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         if (resp.ok) {
             document.getElementById('profile-soul').value = data.soul || '';
@@ -1129,7 +1172,8 @@ async function deleteBot(targetId = null) {
 
     try {
         const resp = await fetch(`${API_BASE}/bots/${botId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: getAuthHeader()
         });
 
         if (resp.ok) {
@@ -1173,7 +1217,10 @@ async function saveBotProfile(filename) {
     try {
         const resp = await fetch(`${API_BASE}/bots/${botId}/profile`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ filename, content })
         });
         const data = await resp.json();
@@ -1190,7 +1237,10 @@ async function clearBotMemory() {
     if (!confirm("Clear all memory? This cannot be undone.")) return;
 
     try {
-        const resp = await fetch(`${API_BASE}/bots/${botId}/memory`, { method: 'DELETE' });
+        const resp = await fetch(`${API_BASE}/bots/${botId}/memory`, {
+            method: 'DELETE',
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         if (resp.ok) {
             alert('Memory cleared!');
@@ -1221,7 +1271,9 @@ async function loadTemplateGallery() {
     gallery.innerHTML = '<p style="color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading templates...</p>';
 
     try {
-        const resp = await fetch(`${API_BASE}/templates/`);
+        const resp = await fetch(`${API_BASE}/templates/`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         if (resp.ok) {
             _templateCache = data;
@@ -1321,7 +1373,10 @@ async function deployTemplate(templateId) {
     try {
         const resp = await fetch(`${API_BASE}/templates/deploy`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
                 template_id: templateId,
                 override_model: selectedModel
@@ -1402,7 +1457,10 @@ async function unlinkTelegramToken() {
     try {
         const resp = await fetch(`${API_BASE}/channels/telegram/unlink`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ bot_id: botId })
         });
 
@@ -1429,7 +1487,10 @@ async function saveTelegramToken() {
     try {
         const resp = await fetch(`${API_BASE}/channels/telegram/save`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ bot_id: botId, token })
         });
         const data = await resp.json();
@@ -1454,7 +1515,10 @@ async function startTelegramWorker(botId) {
     try {
         const resp = await fetch(`${API_BASE}/channels/telegram/start`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ bot_id: botId })
         });
         const data = await resp.json();
@@ -1479,7 +1543,10 @@ async function stopTelegramWorker(botId) {
     try {
         const resp = await fetch(`${API_BASE}/channels/telegram/stop`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ bot_id: botId })
         });
         if (resp.ok) {
@@ -1500,7 +1567,9 @@ async function renderArmyTable() {
     // Fetch live worker status
     let workerStatus = {};
     try {
-        const statusResp = await fetch(`${API_BASE}/channels/telegram/status`);
+        const statusResp = await fetch(`${API_BASE}/channels/telegram/status`, {
+            headers: getAuthHeader()
+        });
         const statusData = await statusResp.json();
         if (statusResp.ok) workerStatus = statusData.workers || {};
     } catch (e) { }
@@ -1558,7 +1627,9 @@ async function loadDashboard() {
 async function loadDashboardExtras() {
     // Load API key count
     try {
-        const resp = await fetch(`${API_BASE}/settings/`);
+        const resp = await fetch(`${API_BASE}/settings/`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         if (resp.ok) {
             const count = Object.values(data.keys_set).filter(v => v).length;
@@ -1569,7 +1640,9 @@ async function loadDashboardExtras() {
 
     // Load SSH status
     try {
-        const resp = await fetch(`${API_BASE}/remote/servers`);
+        const resp = await fetch(`${API_BASE}/remote/servers`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         if (resp.ok && data.servers && data.servers.length > 0) {
             document.getElementById('dash-server-status').innerText = data.servers.length + ' server(s)';
@@ -1584,7 +1657,9 @@ async function loadDashboardExtras() {
 
 async function loadSettings() {
     try {
-        const resp = await fetch(`${API_BASE}/settings/`);
+        const resp = await fetch(`${API_BASE}/settings/`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         if (resp.ok) {
             const standardProviders = ['openai', 'anthropic', 'nvidia', 'google', 'deepseek'];
@@ -1644,7 +1719,10 @@ async function saveCustomProvider() {
     try {
         const resp = await fetch(`${API_BASE}/settings/`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ provider: name, key })
         });
 
@@ -1671,7 +1749,10 @@ async function handleSaveApiKey(e) {
 
     const resp = await fetch(`${API_BASE}/settings/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            ...getAuthHeader(),
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ provider, key })
     });
 
@@ -1698,7 +1779,10 @@ async function deleteLocalAccount() {
     try {
         const resp = await fetch(`${API_BASE}/account/delete`, {
             method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ user_id: currentUser.id })
         });
 
@@ -1734,7 +1818,10 @@ async function changePassword(e) {
     try {
         const resp = await fetch(`${API_BASE}/auth/change-password`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
                 user_id: currentUser.id,
                 current_password: currentPassword,
@@ -1768,7 +1855,10 @@ async function clearApiKey(provider) {
     try {
         const resp = await fetch(`${API_BASE}/settings/`, {
             method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ provider })
         });
 
@@ -1810,7 +1900,10 @@ async function runToolDirect(toolName, args) {
     try {
         const resp = await fetch(`${API_BASE}/tools/execute`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ tool_name: toolName, arguments: args })
         });
         const data = await resp.json();
@@ -2155,7 +2248,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadKBBots() {
     try {
-        const resp = await fetch(`${API_BASE}/chat/bots`);
+        const resp = await fetch(`${API_BASE}/chat/bots`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         if (resp.ok) {
             const select = document.getElementById('kb-bot-select');
@@ -2249,7 +2344,9 @@ async function deleteKnowledgeDoc(docId) {
 
 async function loadSchedBots() {
     try {
-        const resp = await fetch(`${API_BASE}/chat/bots`);
+        const resp = await fetch(`${API_BASE}/chat/bots`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         if (resp.ok) {
             const select = document.getElementById('sched-bot-select');
@@ -3398,7 +3495,10 @@ async function loadMarketplace() {
 
 async function installPlugin(pluginId) {
     try {
-        const res = await fetch(`${API_BASE}/marketplace/install/${pluginId}`, { method: 'POST' });
+        const res = await fetch(`${API_BASE}/marketplace/install/${pluginId}`, {
+            method: 'POST',
+            headers: getAuthHeader()
+        });
         const data = await res.json();
         if (res.ok) {
             alert(data.message);
@@ -3414,7 +3514,10 @@ async function installPlugin(pluginId) {
 async function uninstallPlugin(pluginId) {
     if (!confirm('Uninstall this plugin?')) return;
     try {
-        const res = await fetch(`${API_BASE}/marketplace/uninstall/${pluginId}`, { method: 'POST' });
+        const res = await fetch(`${API_BASE}/marketplace/uninstall/${pluginId}`, {
+            method: 'POST',
+            headers: getAuthHeader()
+        });
         const data = await res.json();
         if (res.ok) {
             alert(data.message);
@@ -3433,7 +3536,9 @@ async function uninstallPlugin(pluginId) {
 
 async function showFlowTemplates() {
     try {
-        const resp = await fetch(`${API_BASE}/flow-templates`);
+        const resp = await fetch(`${API_BASE}/flow-templates`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
 
         if (!resp.ok || !data.templates || data.templates.length === 0) {
@@ -3486,7 +3591,9 @@ async function showFlowTemplates() {
 
 async function importFlowTemplate(templateId) {
     try {
-        const resp = await fetch(`${API_BASE}/flow-templates/${templateId}`);
+        const resp = await fetch(`${API_BASE}/flow-templates/${templateId}`, {
+            headers: getAuthHeader()
+        });
         const tpl = await resp.json();
 
         if (!resp.ok || !tpl.flow_data) {
@@ -3497,7 +3604,10 @@ async function importFlowTemplate(templateId) {
         // Create a new flow with this template data
         const createResp = await fetch(`${API_BASE}/flows`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
                 name: tpl.name.replace(/^[^\w]*/, '').trim() || 'Template Flow',
                 description: tpl.description || '',

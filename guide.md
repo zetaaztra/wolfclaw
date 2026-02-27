@@ -61,5 +61,38 @@ Unlike stateless chatbots, Wolfclaw agents maintain state.
 - **RBAC**: Role-Based Access Control ensures that multi-tenant deployments maintain strict user isolation.
 
 ---
-*End of Guide. Copyright (c) 2026 Pravin A Mathew.*
+
+## Section 5: Wolfclaw ELI5 (Explain Like I'm Five)
+
+Welcome to Wolfclaw! Here is how to use your new AI team:
+
+### 1. How do I start?
+Just run `python desktop_launcher.py`. A beautiful dashboard will open in your web browser. This is your "Command Center."
+
+### 2. How do I make a new friend (Bot)?
+- Go to the **"Manage Bots"** tab.
+- Click **"Create New Bot"**.
+- Give them a Name (like "Scientific Sam") and tell them how to act in the "Base Prompt."
+- Click **Save**. Your bot is now part of your "Pack."
+
+### 3. How do I talk to them?
+- Go to the **"Chat"** tab.
+- Pick your bot from the list at the top.
+- Type your message and hit Enter.
+- **Pro Tip**: If you want them to be extra simple, turn on **"ELI5 Mode"** in the sidebar!
+
+### 4. How do I give them "Superpowers"?
+Your bots have **Tools**. They can:
+- 🖥️ **See your screen**: Tell them "Take a screenshot and tell me what you see."
+- ⌨️ **Type for you**: Tell them "Open Notepad and write a poem."
+- 📁 **Read files**: Tell them "Read the contents of project.py."
+
+### 5. How do I connect a "Remote Server"?
+If you have a powerful computer in the cloud (like AWS):
+- Go to **"Remote Servers"**.
+- Enter the IP address and your Password (or upload your `.pem` key).
+- Click **"Test Connection"**. If it turns green, your bots can now do work on that far-away computer!
+
+---
+*End of Guide. Copyright (c) 2026 Zeta Aztra Technologies.*
 <!-- Auth: Pravin A Mathew | Ref: PAM-Sovereign-Orchestration-v2 -->

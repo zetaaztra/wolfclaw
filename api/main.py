@@ -8,12 +8,13 @@ import uvicorn
 # Initialize FastAPI App
 app = FastAPI(title="Wolfclaw API", version="1.0.0")
 
-# CORS (in case we need to talk to it from outside localhost)
+# CORS - Restrictive settings for local security
+# We only allow the dashboard to communicate with its own backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://127.0.0.1:8501", "http://localhost:8501"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
 

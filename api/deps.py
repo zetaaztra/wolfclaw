@@ -12,9 +12,8 @@ async def get_current_user(auth: HTTPAuthorizationCredentials = Security(securit
     """
     if os.environ.get("WOLFCLAW_ENVIRONMENT") == "desktop":
         if not auth or not auth.credentials:
-            owner_id = os.environ.get("WOLFCLAW_OWNER_ID", "00000000-0000-0000-0000-000000000000")
-            print(f"[AUTH] No Bearer token found. Falling back to dummy OwnerID: {owner_id}")
-            return {"id": owner_id}
+            print("[AUTH] FAILED: No Bearer token provided.")
+            raise HTTPException(status_code=401, detail="Authentication required. Please login.")
             
         token_prefix = auth.credentials[:8]
         print(f"[AUTH] Resolving session for token: {token_prefix}...")
@@ -22,13 +21,11 @@ async def get_current_user(auth: HTTPAuthorizationCredentials = Security(securit
         
         if not session:
             print(f"[AUTH] FAILED: Invalid or expired session token: {token_prefix}...")
-            raise HTTPException(status_code=401, detail="Invalid or expired session")
+            raise HTTPException(status_code=401, detail="Invalid or expired session. Please login again.")
         
         user_id = session["user_id"]
         print(f"[AUTH] SUCCESS: Resolved UserID: {user_id}")
         return {"id": user_id}
         
-    # Cloud mode fallback
-    fallback_id = "00000000-0000-0000-0000-000000000000"
-    print(f"[AUTH] Cloud mode fallback. Using DummyID: {fallback_id}")
-    return {"id": fallback_id}
+    # Restricted mode for non-desktop environments
+    raise HTTPException(status_code=403, detail="API access limited to local desktop instances.")

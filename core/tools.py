@@ -91,8 +91,20 @@ def run_remote_ssh_command(command: str, host: str = "", confidence_score: int =
         if key_content:
             import io
             key_io = io.StringIO(key_content)
-            key = paramiko.RSAKey.from_private_key(key_io)
-            client.connect(hostname=target_host, port=port, username=user, pkey=key, timeout=10)
+            # Try multiple key formats to avoid hiccups with modern servers (Ed25519, etc.)
+            pkey = None
+            for key_class in [paramiko.RSAKey, paramiko.Ed25519Key, paramiko.ECDSAKey, paramiko.DSSKey]:
+                try:
+                    key_io.seek(0)
+                    pkey = key_class.from_private_key(key_io)
+                    break
+                except:
+                    continue
+            
+            if not pkey:
+                return "Error: Could not parse PEM key. Ensure it is a valid OpenSSH private key."
+                
+            client.connect(hostname=target_host, port=port, username=user, pkey=pkey, timeout=10)
         else:
             client.connect(hostname=target_host, port=port, username=user, password=password, timeout=10)
         

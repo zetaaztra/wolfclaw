@@ -512,8 +512,20 @@ def ssh_servers_view():
                     
                     if key_content:
                         key_io = io.StringIO(key_content)
-                        key = paramiko.RSAKey.from_private_key(key_io)
-                        client.connect(hostname=host, port=port_int, username=user, pkey=key, timeout=5)
+                        # Try multiple key formats to avoid hiccups
+                        pkey = None
+                        for key_class in [paramiko.RSAKey, paramiko.Ed25519Key, paramiko.ECDSAKey, paramiko.DSSKey]:
+                            try:
+                                key_io.seek(0)
+                                pkey = key_class.from_private_key(key_io)
+                                break
+                            except:
+                                continue
+                        
+                        if not pkey:
+                            st.error("Invalid SSH Key format.")
+                        else:
+                            client.connect(hostname=host, port=port_int, username=user, pkey=pkey, timeout=5)
                     elif password:
                         client.connect(hostname=host, port=port_int, username=user, password=password, timeout=5)
                     else:

@@ -128,8 +128,20 @@ async def test_ssh_connection(req: SSHTestRequest):
         
         if req.key_content:
             key_io = io.StringIO(req.key_content)
-            key = paramiko.RSAKey.from_private_key(key_io)
-            client.connect(hostname=req.host, port=port_int, username=req.user, pkey=key, timeout=5)
+            # Try multiple key formats to avoid hiccups with modern servers (Ed25519, etc.)
+            pkey = None
+            for key_class in [paramiko.RSAKey, paramiko.Ed25519Key, paramiko.ECDSAKey, paramiko.DSSKey]:
+                try:
+                    key_io.seek(0)
+                    pkey = key_class.from_private_key(key_io)
+                    break
+                except:
+                    continue
+            
+            if not pkey:
+                raise HTTPException(status_code=400, detail="Invalid SSH Key format. Ensure it is a valid OpenSSH private key.")
+                
+            client.connect(hostname=req.host, port=port_int, username=req.user, pkey=pkey, timeout=5)
         elif req.password:
             client.connect(hostname=req.host, port=port_int, username=req.user, password=req.password, timeout=5)
         else:
