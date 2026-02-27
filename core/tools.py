@@ -544,7 +544,10 @@ def execute_tool(tool_name: str, arguments: dict) -> str:
     # Desktop tools
     if os.environ.get("WOLFCLAW_ENVIRONMENT") == "desktop":
         if tool_name == "run_terminal_command":
-            return run_terminal_command(arguments.get("command", ""))
+            return run_terminal_command(
+                arguments.get("command", ""),
+                confidence_score=arguments.get("confidence_score", 100)
+            )
         elif tool_name == "capture_screenshot":
             return capture_screenshot()
         elif tool_name == "simulate_gui":

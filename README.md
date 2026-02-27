@@ -1,143 +1,67 @@
-# Wolfclaw: The Sovereign AI Agent Orchestrator
+# Wolfclaw: Your Private AI Helper 🐺
 
 <div align="center">
   <img src="static/img/wolfclaw-logo.png" alt="Wolfclaw Logo" width="150">
 </div>
 
-[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
-[![Python: 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
-[![Stability: Stable](https://img.shields.io/badge/Stability-Stable-green.svg)]()
-[![Build: v2.0-Sovereign](https://img.shields.io/badge/Build-v2.0--Sovereign-gold.svg)]()
-[![Security: Audited](https://img.shields.io/badge/Security-Audited-brightgreen.svg)](SECURITY.md)
-[![PRs: Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg)](CONTRIBUTING.md)
-
-**Wolfclaw** is your personal command center for private AI agents. It lets you build and manage a team of smart bots that live on your own computer, keeping your data safe and private while helping you automate your work.
-
-Think of Wolfclaw as a secure "digital office." Instead of just one generic chatbot, you can have a whole team of specialized assistants—one for writing, one for research, one for technical work—all working together for you in a way that respects your privacy.
+### What is Wolfclaw?
+Wolfclaw is like a **smart brain** that lives inside your computer. It’s a box of private AI helpers (we call them "Agents") that can do your work for you without anyone else seeing your secrets.
 
 ---
 
-## What can Wolfclaw do for you?
+## Why should I use it?
 
-Wolfclaw is built for people who want the power of AI without the risks of sharing their data.
-
-*   **Total Privacy**: Everything stays on your machine. Your thoughts, files, and secrets are never sent to a big tech company's cloud. 
-*   **Smart Memory**: Unlike other AI, Wolfclaw agents actually "remember" you. They get better at their jobs as they learn how you work and what you prefer.
-*   **Visual Control**: Use a beautiful, easy-to-understand dashboard to see how your bots are thinking. It’s like having a "War Room" for your projects.
-*   **Fast and Local**: If you have a powerful computer, you can run everything for free without paying for expensive monthly subscriptions. 
+1.  **It’s Private**: Unlike ChatGPT where your data goes to a big company, Wolfclaw keeps everything on **your** computer. Your files and ideas stay yours.
+2.  **It’s Smart**: It remembers how you like things done. The more you use it, the better it gets at helping you.
+3.  **It’s and Easy Dashboard**: You don't need to be a computer expert. We have a beautiful screen (GUI) where you can just point and click to tell your helpers what to do.
+4.  **No Monthly Fees**: If you have a good computer, you can run it for free forever. No more "Pro" subscriptions!
 
 ---
 
----
-
-## Global Ecosystem Positioning (Market Differentiation)
-
-While the broader ecosystem is populated with various "agentic kernels" and "channel gateways," Wolfclaw occupies a unique **Orchestration Tier** that separates it from standard AI implementations.
-
-| Feature Layer | Standard AI Kernels | Channel Gateways | **Wolfclaw (Sovereign Orchestration)** |
-| :--- | :--- | :--- | :--- |
-| **User Focus** | **Developers & CLI-Users** | Integration Specialists | **Common People & Home Users** |
-| **Interface** | Terminal / Code-Only | API-Based | **Intuitive GUI Dashboard** |
-| **Identity Model** | Basic Prompting | Session-Based | **Persistent Digital Souls (`SOUL.md`)** |
-| **Logic Scoping** | Stateless Scripts | Connectivity-Focused | **Visual Strategy "War Rooms"** |
-| **Execution Goal** | Chat & Information | Message Delivery | **Autonomous System Workflows** |
-
-### The "Wolfclaw" Difference (GUI vs. CLI)
-While other "claws" and agent frameworks are built for developers who live in a terminal, **Wolfclaw is built for everyone.** 
-
-- **Accessibility First**: You don't need to know how to write code or use a command prompt. Our logic is wrapped in a premium, glassmorphic GUI that makes managing complex AI as easy as using a standard office app.
-- **Visual Intelligence**: Instead of cryptic logs, you get a visual workspace. Watch your agents think, plan, and execute in real-time through the Sovereign Dashboard.
-- **The "Everyman" Agent**: From automating your personal finances to managing your household schedule, Wolfclaw brings the "Digital Soul" paradigm to the everyday user, not just the elite developer.
-- **Strategic Visualization**: Most agent platforms are CLI-bound or one-dimensional. Wolfclaw introduces the **Visual Strategy Room**, allowing you to see and modify the reasoning chains of your "Pack" in real-time.
-- **Evolutionary State**: Where others reset after a session, Wolfclaw agents grow. Every interaction is committed to a local, encrypted knowledge vault, ensuring your agents become more specialized to your specific world with every task.
-- **Elite Performance**: We bridge the gap between "ultra-lean" binaries (which lack reasoning depth) and "heavy" frameworks (which lack speed). Wolfclaw is optimized for high-throughput, premium reasoning.
+## What can my helpers do?
+*   **Write for you**: Emails, stories, or school work.
+*   **Search for you**: Read documents and find the answers you need fast.
+*   **Watch & Learn**: You can show a helper how you do a task (like filling a form), and it can learn to do it for you next time.
+*   **Always Ready**: Your helpers are ready to work 24/7 on your PC.
 
 ---
 
-## Architecture Overview
+## How to get started (The Easy Way)
 
-The Wolfclaw engine utilize a high-performance multiplexing layer for maximum throughput and agent responsiveness.
+If you just want to use it, download the **Windows Installer (.exe)** or the **Linux Package (.deb)** from our website. 
 
-```mermaid
-graph TD
-    User((User)) --> WebUI[Sovereign UI Dahboard]
-    User --> Telegram[Secure Telegram Gateway]
-    WebUI --> FastAPI[Wolfclaw Core API]
-    Telegram --> Worker[Telegram Agent Proxy]
-    FastAPI --> Engine[WolfEngine LLM Router]
-    Worker --> Engine
-    Engine --> LocalDB[(Encrypted Local Vault)]
-    Engine --> Sandboxes[Dockerized Task Runners]
-    Engine --> Providers[NVIDIA NIM / Ollama / API Gateways]
-```
-
-For technical specifications, see the [Technical Guide (guide.md)](guide.md).
+1.  **Open the App**: Click the Wolfclaw icon on your desktop.
+2.  **Login**: Create a local account (it stays on your PC!).
+3.  **Chat**: Pick a helper and start talking!
 
 ---
 
-## Deployment
+## How to get started (For Techy People)
 
-### Prerequisites
-- Python 3.11 or higher
-- Node.js 22+ (for enterprise UI features)
-- Docker (recommended for secure task isolation)
-
-### Installation
-1.  **Clone the pack**:
+1.  **Download the files**:
     ```bash
     git clone https://github.com/zetaaztra/wolfclaw.git
     ```
-2.  **Initialize environment**:
+2.  **Set it up**:
     ```bash
     pip install -r requirements.txt
     ```
-3.  **Awaken the orchestrator**:
+3.  **Turn it on**:
     ```bash
     python desktop_launcher.py
     ```
 
-### Distribution Formats
-For users requiring pre-packaged environments, Wolfclaw is available in the following formats:
-- **Windows Executable (`.exe`)**: Optimized for modern Windows 10/11 environments.
-- **Windows Legacy**: Specialized build for older systems with restricted dependencies.
-- **Debian Package (`.deb`)**: Native integration for Linux-based sovereign workstations.
+---
 
-> [!TIP]
-> For instructions on how to build these distributions from source, see the **[Build Guide](BUILD_GUIDE.md)**.
+## Is it safe?
+**Yes.** We built Wolfclaw to be a "Digital Safe Box." We use the latest security tech to make sure your private AI helpers only listen to you.
 
 ---
 
----
-
-## Support & Development
-
-Wolfclaw is a labor of obsession towards digital freedom. To support the mission and the development of the sovereign AI ecosystem, please see our support page.
-
-- **[Support & Development](SUPPORT.md)**: Contribution channels and mission details.
+## Want to build your own version?
+Check out our **[Build Guide](BUILD_GUIDE.md)** for step-by-step instructions.
 
 ---
 
-## Credits & Attributions
-
-Wolfclaw is built upon and draws deep inspiration from:
-- **OpenClaw**: The original architecture and implementation that discovered the paradigms of local-first agentic orchestration.
-- **Sovereign AI Community**: For the continued evolution of digital freedom tools.
-
----
-
-## License & Governance
-
-Wolfclaw is a professional-grade project governed by international standards.
-
-- **[Legal Disclaimer](DISCLAIMER.md)**: Important cybersecurity and liability information.
-- **[License](LICENSE)**: MIT License.
-- **[Security Policy](SECURITY.md)**: Vulnerability disclosure and reporting.
-- **[Contributing](CONTRIBUTING.md)**: Guidelines for involvement.
-- **[Code of Conduct](CODE_OF_CONDUCT.md)**: Community standards.
-- **[Changelog](CHANGELOG.md)**: History of evolution.
-
-Copyright (c) 2026 Zeta Aztra Technologies. All rights reserved.
-
----
-*Wolfclaw: Crafted with Vision for Sovereign AI by Pravin A Mathew*
-<!-- Author: Pravin A Mathew | Zeta Aztra Technologies -->
+Copyright (c) 2026 Zeta Aztra Technologies.
+*Wolfclaw: Designed for People, Built for Freedom.*
