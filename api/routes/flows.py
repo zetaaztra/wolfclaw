@@ -110,6 +110,27 @@ async def delete_flow(flow_id: str, user: dict = Depends(get_current_user)):
     return {"message": "Flow deleted"}
 
 
+# ─────────── FLOW GENERATION (MAGIC WAND) ───────────
+
+class MagicFlowRequest(BaseModel):
+    prompt: str
+
+@router.post("/magic")
+async def generate_magic_flow(body: MagicFlowRequest, user: dict = Depends(get_current_user)):
+    """Generate a valid Flow JSON based on a natural language prompt."""
+    from core.flow_generator import magic_create_flow
+    
+    try:
+        flow_json = magic_create_flow(body.prompt)
+        # Check if the generated output has nodes
+        if "nodes" not in flow_json:
+             raise HTTPException(status_code=500, detail="Generated flow lacks valid nodes.")
+             
+        return flow_json
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+        
+        
 # ─────────── FLOW EXECUTION ───────────
 
 @router.post("/{flow_id}/run")

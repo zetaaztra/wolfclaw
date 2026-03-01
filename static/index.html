@@ -191,6 +191,15 @@
                     <a href="#" class="nav-item" data-view="marketplace">
                         <i class="fa-solid fa-store"></i> Plugin Store
                     </a>
+                    <a href="#" class="nav-item" data-view="automation">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Automation Studio
+                    </a>
+                    <a href="#" class="nav-item" data-view="vault">
+                        <i class="fa-solid fa-shield-halved"></i> Secrets Vault
+                    </a>
+                    <a href="#" class="nav-item" data-view="wallet">
+                        <i class="fa-solid fa-wallet"></i> Wallet & Usage
+                    </a>
                     <a href="#" class="nav-item" data-view="settings">
                         <i class="fa-solid fa-gear"></i> Settings
                     </a>
@@ -1120,44 +1129,193 @@
                     </div>
                 </div>
 
+                <!-- Vault View -->
+                <div id="view-vault" class="view-panel hidden">
+                    <h1><i class="fa-solid fa-shield-halved"></i> Secrets Vault</h1>
+                    <p>Your sensitive information, hardware-encrypted locally.</p>
+                    <div class="card" style="margin-top:15px; border-left: 4px solid var(--primary-color);">
+                        <h3><i class="fa-solid fa-lock"></i> AES-256 Encrypted Storage</h3>
+                        <p style="margin-top: 10px; color: var(--text-muted);">
+                            The Vault safely stores your passwords, API tokens, and secure variables.
+                            If a bot needs an API key that you don't want exposed in plain text in the settings, you can
+                            store it here.
+                        </p>
+                        <p style="margin-top: 10px; font-weight: bold; color: var(--success-color);">
+                            Status: Vault backend is Active and Protected.
+                        </p>
+                        <p style="font-size: 0.85em; margin-top: 10px; opacity: 0.8;">
+                            Note: Full GUI management for Vault entries is currently accessible via the Streamlit
+                            Dashboard (`streamlit run ui/views.py`). Native HTML Vault entry forms will be fully enabled
+                            in the next update.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Wallet View -->
+                <div id="view-wallet" class="view-panel hidden">
+                    <h1><i class="fa-solid fa-wallet"></i> Wallet & Usage</h1>
+                    <p>Track your local API spending and set daily budgets for your fleet.</p>
+
+                    <div style="margin-top: 20px; display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;">
+                        <select id="wallet-bot-select" class="chat-input" style="max-width: 300px; margin-bottom: 0;">
+                            <option value="">Select a Bot to View</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="loadWalletData()">
+                            <i class="fa-solid fa-rotate-right"></i> Refresh
+                        </button>
+                    </div>
+
+                    <div id="wallet-metrics-container" style="display: none;">
+                        <div class="card-grid">
+                            <div class="card" style="border-left: 4px solid var(--primary-color);">
+                                <h3><i class="fa-solid fa-money-bill-wave"></i> Today's Spend</h3>
+                                <div class="metric-value" id="wallet-today-spend">$0.00</div>
+                            </div>
+                            <div class="card" style="border-left: 4px solid var(--success-color);">
+                                <h3><i class="fa-solid fa-piggy-bank"></i> Remaining Budget</h3>
+                                <div class="metric-value" id="wallet-remaining-budget">$0.00</div>
+                            </div>
+                            <div class="card" style="border-left: 4px solid var(--warning-color);">
+                                <h3><i class="fa-solid fa-chart-line"></i> Daily Budget</h3>
+                                <div class="metric-value" id="wallet-daily-budget">$0.00</div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-top: 20px;">
+                            <h3><i class="fa-solid fa-sliders"></i> Update Budget</h3>
+                            <p style="margin-bottom: 15px; color: var(--text-muted); font-size: 0.9em;">
+                                Set a hard cap on how much this bot can spend per day. Once hit, it will refuse to run
+                                paid models.
+                            </p>
+                            <div style="display: flex; gap: 10px; max-width: 300px;">
+                                <input type="number" id="wallet-new-budget" class="chat-input" placeholder="0.00"
+                                    step="0.10" min="0">
+                                <button class="btn btn-warning" onclick="updateWalletBudget()">Set Cap</button>
+                            </div>
+                            <span class="status-indicator" id="status-wallet-update"></span>
+                        </div>
+
+                        <div class="card" style="margin-top: 20px; border-left: 4px solid var(--danger-color);">
+                            <h3><i class="fa-solid fa-shield"></i> Security Tip</h3>
+                            <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.9em;">
+                                Setting your budget to <code>$0.00</code> restricts the bot to only use <b>Local
+                                    Models</b> (like Ollama) that are 100% free to run.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Automation Studio View -->
+                <div id="view-automation" class="view-panel hidden">
+                    <h1><i class="fa-solid fa-wand-magic-sparkles"></i> Automation Studio</h1>
+                    <p>Build powerful workflows natively and record AI macros using computer vision.</p>
+
+                    <div class="card" style="margin-top: 15px; border-left: 4px solid var(--primary-color);">
+                        <h3><i class="fa-solid fa-wand-sparkles"></i> The Magic Wand (Prompt-to-Flow)</h3>
+                        <p style="margin-top: 10px; color: var(--text-muted);">
+                            Describe your automation goal in plain English, and Wolfclaw will generate a perfectly
+                            structured Flow JSON for you. No drag-and-drop required!
+                        </p>
+                        <div style="margin-top: 15px;">
+                            <textarea id="magic-flow-prompt" class="chat-input" rows="3"
+                                placeholder="e.g. Monitor my disk space and send me a Telegram if it's full."></textarea>
+                            <button class="btn btn-primary" onclick="generateMagicFlow()" style="margin-top: 10px;">
+                                ✨ Create Magic Flow
+                            </button>
+                        </div>
+                        <div id="magic-flow-result" style="margin-top: 15px; display: none;">
+                            <div
+                                style="background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                <pre id="magic-flow-json"
+                                    style="max-height: 200px; overflow-y: auto; font-size: 0.85em; white-space: pre-wrap; margin:0;"></pre>
+                            </div>
+                            <div style="display:flex; gap: 10px; margin-top: 10px;">
+                                <button class="btn btn-success" onclick="downloadMagicFlow()">
+                                    ⬇️ Download Flow JSON
+                                </button>
+                                <button class="btn btn-warning" onclick="loadMagicFlowToCanvas()">
+                                    🪄 Load into Flow Canvas
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-top: 20px; border-left: 4px solid var(--secondary-color);">
+                        <h3><i class="fa-solid fa-eye"></i> Watch & Learn Macros</h3>
+                        <p style="margin-top: 10px; color: var(--text-muted);">
+                            Record a sequence of clicks and keystrokes. Wolfclaw uses OpenCV to capture the visual
+                            anchors of every interaction—meaning your bots will resiliently follow buttons even if
+                            windows move or websites change.
+                        </p>
+
+                        <div style="margin-top: 15px; display: flex; gap: 10px;">
+                            <button id="btn-start-macro" class="btn btn-danger" onclick="startMacroRecording()">
+                                ⏺️ Record Macro
+                            </button>
+                            <button id="btn-stop-macro" class="btn btn-secondary" onclick="stopMacroRecording()"
+                                disabled>
+                                ⏹️ Stop Recording
+                            </button>
+                        </div>
+
+                        <div id="macro-status-container" style="margin-top: 15px; display: none;">
+                            <span class="status-indicator"></span>
+                            <div
+                                style="margin-top:10px; font-size: 0.9em; padding: 10px; background: rgba(var(--warning-color-rgb), 0.1); border-left: 3px solid var(--warning-color); border-radius: 4px;">
+                                <strong>Status:</strong> <span id="macro-status-text">Ready</span>
+                            </div>
+
+                            <div id="macro-analysis-section" style="margin-top: 15px; display: none;">
+                                <button class="btn btn-primary" onclick="analyzeMacroSession()">
+                                    🧠 Analyze & Generate JSON
+                                </button>
+                                <p style="font-size: 0.8em; color: var(--text-muted); margin-top: 5px;">Sends the
+                                    captured images to your default LLM (Vision mode) to convert the recording into a
+                                    standalone automation flow.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Help & Guide View -->
                 <div id="view-help" class="view-panel hidden">
                     <div class="help-hero"
                         style="background: linear-gradient(135deg, var(--accent-light), var(--bg-card)); padding: 40px; border-radius: 12px; margin-bottom: 30px; border: 1px solid var(--border-color);">
-                        <h1 style="margin:0; font-size: 2.5em;"><i class="fa-solid fa-raindrops"></i> The Essence of
+                        <h1 style="margin:0; font-size: 2.5em;"><i class="fa-solid fa-raindrops"></i> Welcome to
                             Wolfclaw</h1>
                         <p style="font-size: 1.1em; color: var(--text-muted); margin-top: 10px; max-width: 800px;">
-                            Wolfclaw is not just a chatbot. It is a <strong>Multi-Agent Orchestration Engine</strong>
-                            designed for local-first autonomy.
-                            Our philosophy is simple: Give the user an AI army that lives on their metal, respects their
-                            privacy, and executes complex missions via visual logic.
+                            Wolfclaw is your personal AI assistant team. It runs entirely on your computer, meaning your
+                            data stays completely private. Think of it as having real helpers who can chat, search, and
+                            manage your tasks without sending your personal information over the internet.
                         </p>
                     </div>
 
                     <div class="card-grid">
                         <!-- Navigation Essence -->
                         <div class="card" style="grid-column: span 2;">
-                            <h3 style="color: var(--accent-color);"><i class="fa-solid fa-compass"></i> Master the
-                                Workflow</h3>
+                            <h3 style="color: var(--accent-color);"><i class="fa-solid fa-compass"></i> Let's Get
+                                Started</h3>
                             <div
                                 style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 15px;">
                                 <div>
-                                    <h4 style="margin-bottom:8px;">1. Spawn Your Agents</h4>
-                                    <p style="font-size:0.85em; color:var(--text-muted);">Go to <strong>Manage
-                                            Bots</strong>. Define their "Soul" (System Prompt). Each bot is a
-                                        specialist. One for code, one for research, one for creative writing.</p>
+                                    <h4 style="margin-bottom:8px;">1. Pick an AI Role</h4>
+                                    <p style="font-size:0.85em; color:var(--text-muted);">Go to <strong>AI
+                                            Roles</strong>.
+                                        You can pick an AI that is best for coding, another for writing emails, or just
+                                        a friendly chat companion.</p>
                                 </div>
                                 <div>
-                                    <h4 style="margin-bottom:8px;">2. Connect the "Hands"</h4>
+                                    <h4 style="margin-bottom:8px;">2. Add Abilities</h4>
                                     <p style="font-size:0.85em; color:var(--text-muted);">Use the <strong>Plugin
-                                            Store</strong> to give agents tools like the calculator or web search.
-                                        Without plugins, agents are just thinkers. With plugins, they are doers.</p>
+                                            Store</strong> to give your AI extra abilities, such as searching the
+                                        internet or reading files.</p>
                                 </div>
                                 <div>
-                                    <h4 style="margin-bottom:8px;">3. Orchestrate Missions</h4>
-                                    <p style="font-size:0.85em; color:var(--text-muted);">Use the <strong>War
-                                            Room</strong> for complex tasks. Let a Manager agent delegate work to a team
-                                        of sub-agents and synthesize the result.</p>
+                                    <h4 style="margin-bottom:8px;">3. Start Chatting</h4>
+                                    <p style="font-size:0.85em; color:var(--text-muted);">Go back to the
+                                        <strong>Chat</strong> screen and say hello! You can ask it to help you write,
+                                        research, or brainstorm ideas.
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -1242,7 +1400,8 @@
                                 <div>
                                     <h4 style="margin-bottom:5px;">🏠 How to start?</h4>
                                     <p style="font-size:0.85em; color:var(--text-muted);">Run
-                                        <code>desktop_launcher.py</code>. This dashboard is your AI Command Center.</p>
+                                        <code>desktop_launcher.py</code>. This dashboard is your AI Command Center.
+                                    </p>
 
                                     <h4 style="margin-bottom:5px; margin-top:15px;">🤖 Making a Bot Friend</h4>
                                     <p style="font-size:0.85em; color:var(--text-muted);">Go to <strong>Manage

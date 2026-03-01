@@ -1,0 +1,22 @@
+{
+    "name": "Wolfclaw AI",
+    "short_name": "Wolfclaw",
+    "description": "Your Sovereign AI Command Center — Local-First Agent Orchestrator",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0f0f23",
+    "theme_color": "#8b5cf6",
+    "orientation": "any",
+    "icons": [
+        {
+            "src": "/static/img/wolfclaw-logo.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/static/img/wolfclaw-logo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

@@ -202,8 +202,13 @@ def run_terminal_command(command: str, confidence_score: int = 100) -> str:
     """Run a terminal command locally on the host machine."""
     
     # Measure Twice Safety Check
-    if confidence_score < 90:
-        return "SAFETY ABORT: Your confidence score is too low. DO NOT GUESS. Ask the user a clarifying question instead."
+    try:
+        score = int(confidence_score)
+    except (ValueError, TypeError):
+        score = 100
+        
+    if score < 90:
+        return f"SAFETY ABORT: Your confidence score {confidence_score} is too low. DO NOT GUESS. Ask the user a clarifying question instead."
         
     if not _is_command_safe(command):
         return "SECURITY ABORT: The command contains potentially malicious characters or destructive operations. For your safety, I cannot execute this."
@@ -245,12 +250,24 @@ def capture_screenshot() -> str:
     except Exception as e:
         return f"Failed to capture screenshot: {str(e)}"
 
-def simulate_gui(action: str, keys: str = "", x: int = 0, y: int = 0) -> str:
-    """Simulates keyboard typing, hotkeys, or mouse clicks using PyAutoGUI."""
+def simulate_gui(action: str, keys: str = "", x: int = 0, y: int = 0, anchor_image: str = None) -> str:
+    """Simulates keyboard typing, hotkeys, or mouse clicks. Now with Self-Healing via anchors."""
     try:
         import pyautogui
         pyautogui.FAILSAFE = True
         pyautogui.PAUSE = 0.5
+
+        # --- SELF-HEALING LOGIC ---
+        if action == "click" and anchor_image:
+            from core.vision_matcher import vision_matcher
+            # Try to find the anchor on screen
+            new_coords = vision_matcher.find_anchor(anchor_image)
+            if new_coords:
+                x, y = new_coords
+                logger.info(f"Self-Healing: Rebased click to ({x}, {y}) based on anchor '{anchor_image}'")
+            else:
+                logger.warning(f"Self-Healing: Could not find anchor '{anchor_image}'. Falling back to coordinates ({x}, {y})")
+        # ---------------------------
 
         if action == "type":
             if not keys: return "Error: No text provided to type."
@@ -480,14 +497,15 @@ if os.environ.get("WOLFCLAW_ENVIRONMENT") == "desktop":
             "type": "function",
             "function": {
                 "name": "simulate_gui",
-                "description": "Simulate human keyboard and mouse inputs. ONLY use this when the user EXPLICITLY asks you to type out a specific phrase, press a key, or click. Do NOT use this to talk to the user. Do NOT use this to write long blocks of code (use run_terminal_command with Out-File instead).",
+                "description": "Simulate human keyboard and mouse inputs. Supports 'Self-Healing' if an anchor_image is provided.",
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "action": {"type": "string", "enum": ["type", "hotkey", "press", "click"]},
-                        "keys": {"type": "string", "description": "Text to type or keys to press/hotkey separated by commas. If typing code, you must handle all newlines and indents perfectly."},
+                        "keys": {"type": "string", "description": "Text to type or keys to press/hotkey separated by commas."},
                         "x": {"type": "integer"},
-                        "y": {"type": "integer"}
+                        "y": {"type": "integer"},
+                        "anchor_image": {"type": "string", "description": "Full path to a visual anchor PNG to ensure click accuracy."}
                     },
                     "required": ["action"]
                 }
@@ -555,7 +573,8 @@ def execute_tool(tool_name: str, arguments: dict) -> str:
                 arguments.get("action", ""),
                 arguments.get("keys", ""),
                 arguments.get("x", 0),
-                arguments.get("y", 0)
+                arguments.get("y", 0),
+                anchor_image=arguments.get("anchor_image")
             )
         elif tool_name == "web_browser":
             return web_browser(arguments.get("action", ""), arguments.get("url", ""))

@@ -129,6 +129,8 @@ function switchView(viewName) {
     if (viewName === 'channels') loadChannelBots();
     if (viewName === 'ai-roles') loadTemplateGallery();
     if (viewName === 'saved') loadSavedResponses();
+    if (viewName === 'war-room') loadWarRoom();
+    if (viewName === 'wallet') loadWalletBotsDropdown();
 }
 
 function toggleNewBotForm() {
@@ -665,7 +667,7 @@ async function loadSavedResponses() {
     gallery.innerHTML = '<p style="color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading saved responses...</p>';
 
     try {
-        const resp = await fetch(`${API_BASE}/favorites/`, {
+        const resp = await fetch(`${API_BASE}/favorites`, {
             headers: getAuthHeader()
         });
         const data = await resp.json();
@@ -1747,7 +1749,7 @@ async function handleSaveApiKey(e) {
 
     if (!key) return;
 
-    const resp = await fetch(`${API_BASE}/settings/`, {
+    const resp = await fetch(`${API_BASE}/settings`, {
         method: 'POST',
         headers: {
             ...getAuthHeader(),
@@ -1758,7 +1760,10 @@ async function handleSaveApiKey(e) {
 
     if (resp.ok) {
         const statusEl = document.getElementById(`status-${provider}`);
-        if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-check" style="color:var(--success-color);"></i> Saved';
+        if (statusEl) {
+            statusEl.innerHTML = '<i class="fa-solid fa-check" style="color:var(--success-color);"></i> Saved';
+            setTimeout(() => statusEl.innerHTML = '', 3000); // Clear after 3 seconds
+        }
         form.querySelector('input').value = '';
         alert(`✅ ${provider.charAt(0).toUpperCase() + provider.slice(1)} key saved!`);
     } else {
@@ -3291,6 +3296,75 @@ async function deleteFlow(flowId) {
 }
 
 // ==========================================
+// MAGIC WAND (PROMPT-TO-FLOW)
+// ==========================================
+
+function openMagicWandModal() {
+    document.getElementById('magic-wand-modal').classList.remove('hidden');
+    document.getElementById('magic-wand-prompt').value = '';
+    document.getElementById('magic-wand-prompt').focus();
+}
+
+function closeMagicWandModal() {
+    document.getElementById('magic-wand-modal').classList.add('hidden');
+}
+
+async function generateMagicFlow() {
+    const prompt = document.getElementById('magic-wand-prompt').value.trim();
+    if (!prompt) return alert('Please enter a description for your automation.');
+
+    const btn = document.getElementById('btn-magic-generate');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+
+    try {
+        const res = await fetch(`${API_BASE}/flows/magic`, { // Use absolute path equivalent or mapped base depending on modern vs legacy config. Wait, for modern it's /magic, wait, in modern we registered it as router.post("/magic") but the prefix in main.py is likely /api/flows? Let's check api/routes/flows.py. Yes, the prefix for this router is /api/flows. So /api/flows/magic
+            method: 'POST',
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ prompt: prompt })
+        });
+        const flowData = await res.json();
+
+        if (res.ok) {
+            closeMagicWandModal();
+            // Create a new flow automatically
+            const flowName = prompt.split(" ").slice(0, 4).join(" ") + " Flow";
+            const createRes = await fetch(`${API_BASE}/flows`, {
+                method: 'POST',
+                headers: {
+                    ...getAuthHeader(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: flowName.charAt(0).toUpperCase() + flowName.slice(1),
+                    description: prompt,
+                    flow_data: JSON.stringify(flowData)
+                })
+            });
+
+            if (createRes.ok) {
+                const newFlow = await createRes.json();
+                alert('✨ Magic Flow Created! Opening Editor...');
+                loadFlowsView();
+                openFlowEditor(newFlow.id, newFlow.name, newFlow.description, newFlow.flow_data);
+            } else {
+                alert('Failed to save generated flow.');
+            }
+        } else {
+            alert('Generation Failed: ' + (flowData.detail || 'Unknown error'));
+        }
+    } catch (e) {
+        alert('Error: ' + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Generate';
+    }
+}
+
+// ==========================================
 // PHASE 19: UNIVERSAL APP INTEGRATIONS
 // ==========================================
 
@@ -3624,13 +3698,137 @@ async function importFlowTemplate(templateId) {
             alert('✅ Flow created from template! Opening editor...');
             loadFlowsView();
             openFlowEditor(newFlow.id, newFlow.name, newFlow.description, newFlow.flow_data);
-        } else {
-            alert('Failed to create flow from template.');
         }
     } catch (err) {
         alert('Error importing template: ' + err.message);
     }
 }
+
+// ==========================================
+// PLUGIN MARKETPLACE
+// ==========================================
+async function loadMarketplacePlugins(tab = 'store') {
+    // Update button styling
+    document.getElementById('btn-market-store').className = tab === 'store' ? 'btn btn-primary' : 'btn btn-secondary';
+    document.getElementById('btn-market-installed').className = tab === 'installed' ? 'btn btn-primary' : 'btn btn-secondary';
+
+    const container = document.getElementById('marketplace-list');
+    container.innerHTML = '<p style="color:var(--text-muted);">Loading plugins...</p>';
+
+    try {
+        if (tab === 'store') {
+            const resp = await fetch(`${API_BASE}/marketplace`, { headers: getAuthHeader() });
+            const data = await resp.json();
+
+            // Also fetch installed plugins to show correct button state
+            const installedResp = await fetch(`${API_BASE}/marketplace/installed`, { headers: getAuthHeader() });
+            const installedData = await installedResp.json();
+
+            renderMarketplaceStore(data.plugins, installedData.installed);
+        } else {
+            const resp = await fetch(`${API_BASE}/marketplace/installed`, { headers: getAuthHeader() });
+            const data = await resp.json();
+            renderMarketplaceInstalled(data.installed);
+        }
+    } catch (err) {
+        container.innerHTML = `<p style="color:var(--danger-color);">Error loading marketplace: ${err.message}</p>`;
+    }
+}
+
+function renderMarketplaceStore(plugins, installedList) {
+    const container = document.getElementById('marketplace-list');
+    container.innerHTML = '';
+
+    if (!plugins || plugins.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted);">No plugins available in the store right now.</p>';
+        return;
+    }
+
+    plugins.forEach(p => {
+        const isInstalled = installedList.includes(p.id);
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.cssText = 'display:flex; flex-direction:column; justify-content:space-between; height:100%;';
+        card.innerHTML = `
+            <div>
+                <h3 style="margin-top:0; margin-bottom:5px;">${p.name}</h3>
+                <span style="font-size:0.8em; color:var(--text-muted);">by ${p.author} | ${p.downloads} Dls</span>
+                <p style="font-size:0.9em; margin-top:10px; color:var(--text-color);">${p.description}</p>
+            </div>
+            <div style="margin-top:15px;">
+                ${isInstalled ?
+                `<button class="btn btn-secondary btn-sm" disabled style="width:100%;">Installed <i class="fa-solid fa-check"></i></button>` :
+                `<button class="btn btn-primary btn-sm" onclick="installPlugin('${p.id}')" style="width:100%;">Install <i class="fa-solid fa-download"></i></button>`
+            }
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function renderMarketplaceInstalled(installedIds) {
+    const container = document.getElementById('marketplace-list');
+    container.innerHTML = '';
+
+    if (!installedIds || installedIds.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted);">No plugins installed yet.</p>';
+        return;
+    }
+
+    installedIds.forEach(id => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.cssText = 'display:flex; justify-content:space-between; align-items:center; border-left:4px solid var(--success-color);';
+        card.innerHTML = `
+            <div>
+                <h3 style="margin:0;">${id}</h3>
+                <p style="font-size:0.8em; color:var(--text-muted); margin:4px 0 0 0;">Local Plugin Script</p>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="uninstallPlugin('${id}')">
+                <i class="fa-solid fa-trash"></i> Uninstall
+            </button>
+        `;
+        container.appendChild(card);
+    });
+}
+
+async function installPlugin(pluginId) {
+    try {
+        const resp = await fetch(`${API_BASE}/marketplace/install/${pluginId}`, {
+            method: 'POST',
+            headers: getAuthHeader()
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+            alert("✅ " + data.message);
+            loadMarketplacePlugins('store'); // refresh
+        } else {
+            alert('Failed: ' + (data.detail || 'Unknown error'));
+        }
+    } catch (err) {
+        alert('Error installing plugin: ' + err.message);
+    }
+}
+
+async function uninstallPlugin(pluginId) {
+    if (!confirm("Are you sure you want to uninstall " + pluginId + "?")) return;
+    try {
+        const resp = await fetch(`${API_BASE}/marketplace/uninstall/${pluginId}`, {
+            method: 'POST',
+            headers: getAuthHeader()
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+            alert("✅ " + data.message);
+            loadMarketplacePlugins('installed'); // refresh
+        } else {
+            alert('Failed: ' + (data.detail || 'Unknown error'));
+        }
+    } catch (err) {
+        alert('Error uninstalling plugin: ' + err.message);
+    }
+}
+
 async function checkLocalAI() {
     try {
         const resp = await fetch(`${API_BASE}/health`);
@@ -3643,5 +3841,820 @@ async function checkLocalAI() {
         }
     } catch (e) {
         // Ollama not running or blocked
+    }
+}
+
+// ==========================================
+// WAR ROOM / SWARM LOGIC
+// ==========================================
+async function loadWarRoom() {
+    try {
+        const resp = await fetch(`${API_BASE}/bots`, { headers: getAuthHeader() });
+        const data = await resp.json();
+
+        const managerSelect = document.getElementById('warroom-manager-select');
+        const subBotList = document.getElementById('warroom-subbot-list');
+
+        if (!managerSelect || !subBotList) return;
+
+        managerSelect.innerHTML = '<option value="">-- Select Manager Bot --</option>';
+        subBotList.innerHTML = '';
+
+        data.bots.forEach(bot => {
+            // Add to manager select
+            const opt = document.createElement('option');
+            opt.value = bot.id;
+            opt.textContent = `${bot.name} (${bot.model})`;
+            managerSelect.appendChild(opt);
+
+            // Add to sub-bot checklist
+            const div = document.createElement('div');
+            div.style.cssText = 'padding: 8px; border-bottom: 1px solid var(--border-color); display:flex; align-items:center; gap:10px;';
+            div.innerHTML = `
+                <input type="checkbox" id="warbot-${bot.id}" value="${bot.id}" class="warbot-checkbox" style="width:16px; height:16px;">
+                <label for="warbot-${bot.id}" style="margin:0; cursor:pointer;"><strong>${bot.name}</strong> <span style="font-size:0.8em; color:var(--text-muted);">(${bot.model})</span></label>
+            `;
+            subBotList.appendChild(div);
+        });
+    } catch (e) {
+        console.error("Failed to load bots for War Room:", e);
+    }
+}
+
+async function startWarRoom() {
+    const managerSelect = document.getElementById('warroom-manager-select');
+    const checkboxes = document.querySelectorAll('.warbot-checkbox:checked');
+
+    if (!managerSelect.value) {
+        alert("Please select a Manager Bot.");
+        return;
+    }
+    if (checkboxes.length === 0) {
+        alert("Please select at least one Sub-Bot.");
+        return;
+    }
+
+    const taskPrompt = prompt("Enter the complex task for the Manager to orchestrate:");
+    if (!taskPrompt) return;
+
+    // Switch UI to active war room
+    document.getElementById('war-room-setup').classList.add('hidden');
+    const activeView = document.getElementById('war-room-active');
+    if (activeView) activeView.classList.remove('hidden');
+
+    const logsEl = document.getElementById('war-room-logs');
+    if (logsEl) {
+        logsEl.innerHTML = `<p style="color:var(--accent-color);">[SYSTEM] Swarm Orchestration Started</p>
+                            <p>> Task: ${taskPrompt}</p>
+                            <p>> Manager processing and dispatching workers...</p>`;
+    }
+
+    const workerIds = Array.from(checkboxes).map(cb => cb.value);
+
+    try {
+        const resp = await fetch(`${API_BASE}/swarm/execute`, {
+            method: 'POST',
+            headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                task: taskPrompt,
+                manager_bot_id: managerSelect.value,
+                worker_bot_ids: workerIds
+            })
+        });
+
+        const result = await resp.json();
+
+        if (resp.ok) {
+            if (logsEl) {
+                logsEl.innerHTML += `<p style="color:var(--success-color);">[SYSTEM] Swarm Task Complete!</p>`;
+
+                result.worker_results.forEach(r => {
+                    logsEl.innerHTML += `<p style="color:var(--text-muted);">> Worker ${r.bot_id} finished execution.</p>`;
+                });
+
+                logsEl.innerHTML += `<div style="margin-top:20px; padding:15px; border-top:1px solid var(--border-color); background:var(--bg-secondary); border-radius:8px;">
+                    <h4 style="margin-top:0;">Manager Final Synthesis:</h4>
+                    <p style="white-space:pre-wrap;">${result.final_answer.replace(/\\n/g, '<br>')}</p>
+                </div>`;
+            }
+        } else {
+            if (logsEl) logsEl.innerHTML += `<p style="color:var(--danger-color);">[ERROR] ${result.detail}</p>`;
+        }
+    } catch (e) {
+        if (logsEl) logsEl.innerHTML += `<p style="color:var(--danger-color);">[FATAL ERROR] ${e.message}</p>`;
+    }
+}
+
+// ==========================================
+// PHASE 13: ACTIVITY FEED
+// ==========================================
+async function loadActivityFeed() {
+    const container = document.getElementById('activity-feed-list');
+    if (!container) return;
+    try {
+        const resp = await fetch(`${API_BASE}/activity?limit=30`, { headers: getAuthHeader() });
+        const data = await resp.json();
+        container.innerHTML = '';
+        if (!data.events || data.events.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-muted);">No recent activity.</p>';
+            return;
+        }
+        data.events.forEach(ev => {
+            const div = document.createElement('div');
+            div.style.cssText = 'padding:8px 12px; border-bottom:1px solid var(--border-color); font-size:0.9em;';
+            const ts = new Date(ev.ts).toLocaleTimeString();
+            const icon = { bot_ping: '🤖', flow: '⚙️', macro: '🎬', swarm: '🐝', plugin: '🧩', webhook: '🔗', clipboard: '📋', scheduler: '🗓️' }[ev.type] || '📌';
+            div.innerHTML = `<span style="color:var(--text-muted);">${ts}</span> ${icon} <strong>${ev.type}</strong> — ${ev.detail}`;
+            container.appendChild(div);
+        });
+    } catch (e) {
+        if (container) container.innerHTML = '<p style="color:var(--danger-color);">Failed to load activity.</p>';
+    }
+}
+
+// ==========================================
+// PHASE 13: VOICE INPUT / OUTPUT
+// ==========================================
+function startVoiceInput() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("Voice input is not supported in this browser. Try Chrome.");
+        return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        const chatInput = document.getElementById('chat-input');
+        if (chatInput) {
+            chatInput.value = transcript;
+        }
+    };
+    recognition.onerror = (event) => {
+        console.error("Voice recognition error:", event.error);
+        alert("Voice error: " + event.error);
+    };
+    recognition.start();
+}
+
+function speakResponse(text) {
+    if (!window.speechSynthesis) return;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    window.speechSynthesis.speak(utterance);
+}
+
+// ==========================================
+// PHASE 13: MEMORY SEARCH
+// ==========================================
+async function searchMemory() {
+    const queryInput = document.getElementById('memory-search-input');
+    const resultsDiv = document.getElementById('memory-search-results');
+    if (!queryInput || !resultsDiv) return;
+
+    const q = queryInput.value.trim();
+    if (!q) { alert("Enter a search term."); return; }
+
+    resultsDiv.innerHTML = '<p style="color:var(--text-muted);">Searching...</p>';
+    try {
+        const resp = await fetch(`${API_BASE}/memory/search?q=${encodeURIComponent(q)}`, { headers: getAuthHeader() });
+        const data = await resp.json();
+        resultsDiv.innerHTML = '';
+        if (data.result_count === 0) {
+            resultsDiv.innerHTML = '<p style="color:var(--text-muted);">No matches found.</p>';
+            return;
+        }
+        data.results.forEach(r => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.style.marginBottom = '10px';
+            let snippetsHtml = r.matches.map(m =>
+                `<p style="font-size:0.85em; color:var(--text-color); margin:4px 0;"><strong>${m.role}:</strong> ${m.snippet}</p>`
+            ).join('');
+            card.innerHTML = `<h4 style="margin:0 0 5px 0;">${r.title || 'Chat'}</h4>${snippetsHtml}`;
+            resultsDiv.appendChild(card);
+        });
+    } catch (e) {
+        resultsDiv.innerHTML = '<p style="color:var(--danger-color);">Search failed.</p>';
+    }
+}
+
+// ==========================================
+// PHASE 13: BOT EXPORT / IMPORT
+// ==========================================
+async function exportBot(botId) {
+    try {
+        const resp = await fetch(`${API_BASE}/bots/${botId}/export`, { headers: getAuthHeader() });
+        const data = await resp.json();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = (data.name || 'wolfbot') + '.wolfbot';
+        a.click();
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        alert("Export failed: " + e.message);
+    }
+}
+
+async function importBot() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.wolfbot,.json';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+            try {
+                const wolfbot = JSON.parse(ev.target.result);
+                const resp = await fetch(`${API_BASE}/bots/import`, {
+                    method: 'POST',
+                    headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify(wolfbot)
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    alert("✅ Bot imported: " + data.name);
+                    loadBots();
+                } else {
+                    alert("Import failed: " + (data.detail || "Unknown error"));
+                }
+            } catch (err) {
+                alert("Invalid .wolfbot file: " + err.message);
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+// ==========================================
+// PHASE 13: SCREENSHOT PASTE TO CHAT
+// ==========================================
+function initScreenshotPaste() {
+    const chatInput = document.getElementById('chat-input');
+    if (!chatInput) return;
+
+    chatInput.addEventListener('paste', async (e) => {
+        const items = e.clipboardData && e.clipboardData.items;
+        if (!items) return;
+
+        for (let item of items) {
+            if (item.type.indexOf('image') !== -1) {
+                e.preventDefault();
+                const blob = item.getAsFile();
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                    const base64 = ev.target.result.split(',')[1];
+                    const prompt = chatInput.value || "Analyze this screenshot.";
+
+                    // Show loading state
+                    const chatBox = document.getElementById('chat-messages');
+                    if (chatBox) {
+                        chatBox.innerHTML += '<div class="chat-message user"><p>📸 [Screenshot pasted for analysis]</p></div>';
+                        chatBox.innerHTML += '<div class="chat-message bot"><p style="color:var(--text-muted);">Analyzing image...</p></div>';
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    }
+
+                    try {
+                        const resp = await fetch(`${API_BASE}/chat/vision`, {
+                            method: 'POST',
+                            headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ image_base64: base64, prompt: prompt })
+                        });
+                        const data = await resp.json();
+                        if (resp.ok && chatBox) {
+                            chatBox.lastElementChild.innerHTML = '<p>' + data.analysis + '</p>';
+                        } else if (chatBox) {
+                            chatBox.lastElementChild.innerHTML = '<p style="color:var(--danger-color);">' + (data.detail || 'VLM analysis failed.') + '</p>';
+                        }
+                    } catch (err) {
+                        if (chatBox) chatBox.lastElementChild.innerHTML = '<p style="color:var(--danger-color);">Error: ' + err.message + '</p>';
+                    }
+                };
+                reader.readAsDataURL(blob);
+                break;
+            }
+        }
+    });
+}
+
+// Initialize screenshot paste when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(initScreenshotPaste, 1000);
+    setTimeout(initNotificationBell, 1500);
+    setTimeout(loadTheme, 200);
+    setTimeout(checkOnboarding, 2000);
+});
+
+// ==========================================
+// PHASE 14: DASHBOARD HOME
+// ==========================================
+async function loadDashboardHome() {
+    const container = document.getElementById('dashboard-home');
+    if (!container) return;
+    try {
+        const resp = await fetch(`${API_BASE}/dashboard/home`, { headers: getAuthHeader() });
+        const d = await resp.json();
+        container.innerHTML = `
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px;">
+                <div class="card" style="text-align:center;"><h2>${d.chats_today}</h2><small>Chats Today</small></div>
+                <div class="card" style="text-align:center;"><h2>${d.total_bots}</h2><small>Total Bots</small></div>
+                <div class="card" style="text-align:center;"><h2>${d.total_flows}</h2><small>Total Flows</small></div>
+                <div class="card" style="text-align:center;"><h2>${d.tokens_today.toLocaleString()}</h2><small>Tokens Today</small></div>
+            </div>
+            ${d.top_bot ? `<p><strong>🏆 Top Bot:</strong> ${d.top_bot.name} (${d.top_bot.chats} chats)</p>` : ''}
+            <div style="display:flex;gap:10px;margin-top:16px;">
+                <button class="btn btn-primary" onclick="navigateTo('chat')">💬 New Chat</button>
+                <button class="btn" onclick="navigateTo('bots')">🤖 Create Bot</button>
+                <button class="btn" onclick="navigateTo('flows')">⚙️ Run Flow</button>
+            </div>
+        `;
+    } catch (e) { console.error('Dashboard home error:', e); }
+}
+
+// ==========================================
+// PHASE 14: NOTIFICATION BELL
+// ==========================================
+function initNotificationBell() {
+    const header = document.querySelector('.header-right, .top-bar, nav');
+    if (!header) return;
+    const bell = document.createElement('div');
+    bell.id = 'notif-bell';
+    bell.style.cssText = 'position:relative;cursor:pointer;display:inline-block;margin-right:16px;font-size:1.3em;';
+    bell.innerHTML = '🔔<span id="notif-badge" style="position:absolute;top:-5px;right:-8px;background:var(--danger-color);color:#fff;border-radius:50%;font-size:0.6em;padding:2px 5px;display:none;">0</span>';
+    bell.onclick = toggleNotifDrawer;
+    header.prepend(bell);
+    setInterval(pollNotifications, 15000);
+    pollNotifications();
+}
+
+async function pollNotifications() {
+    try {
+        const resp = await fetch(`${API_BASE}/notifications/count`, { headers: getAuthHeader() });
+        const data = await resp.json();
+        const badge = document.getElementById('notif-badge');
+        if (badge) {
+            if (data.unread_count > 0) {
+                badge.textContent = data.unread_count;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch (e) { }
+}
+
+async function toggleNotifDrawer() {
+    let drawer = document.getElementById('notif-drawer');
+    if (drawer) { drawer.remove(); return; }
+    drawer = document.createElement('div');
+    drawer.id = 'notif-drawer';
+    drawer.style.cssText = 'position:fixed;top:50px;right:20px;width:360px;max-height:400px;overflow-y:auto;background:var(--card-bg);border:1px solid var(--border-color);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.3);z-index:9999;padding:16px;';
+    try {
+        const resp = await fetch(`${API_BASE}/notifications?limit=20`, { headers: getAuthHeader() });
+        const data = await resp.json();
+        let html = '<div style="display:flex;justify-content:space-between;margin-bottom:12px;"><h3 style="margin:0;">Notifications</h3><button onclick="markAllNotifRead()" style="font-size:0.8em;cursor:pointer;background:none;border:none;color:var(--accent-color);">Mark All Read</button></div>';
+        if (!data.notifications || data.notifications.length === 0) {
+            html += '<p style="color:var(--text-muted);">No notifications.</p>';
+        } else {
+            data.notifications.forEach(n => {
+                const opacity = n.read ? '0.5' : '1';
+                html += `<div style="padding:8px 0;border-bottom:1px solid var(--border-color);opacity:${opacity};"><strong>${n.title}</strong><br><small style="color:var(--text-muted);">${n.ts}</small><br><span style="font-size:0.85em;">${n.body.substring(0, 120)}</span></div>`;
+            });
+        }
+        drawer.innerHTML = html;
+    } catch (e) { drawer.innerHTML = '<p>Error loading notifications.</p>'; }
+    document.body.appendChild(drawer);
+}
+
+async function markAllNotifRead() {
+    await fetch(`${API_BASE}/notifications/read-all`, { method: 'POST', headers: getAuthHeader() });
+    pollNotifications();
+    const drawer = document.getElementById('notif-drawer');
+    if (drawer) drawer.remove();
+}
+
+// ==========================================
+// PHASE 14: THEME ENGINE
+// ==========================================
+async function loadTheme() {
+    try {
+        const resp = await fetch(`${API_BASE}/theme`, { headers: getAuthHeader() });
+        const data = await resp.json();
+        applyTheme(data.mode, data.accent);
+    } catch (e) { }
+}
+
+function applyTheme(mode, accent) {
+    document.documentElement.setAttribute('data-theme', mode);
+    if (accent) document.documentElement.style.setProperty('--accent-color', accent);
+}
+
+async function setTheme(mode, accent) {
+    await fetch(`${API_BASE}/theme`, {
+        method: 'POST',
+        headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode, accent })
+    });
+    applyTheme(mode, accent);
+}
+
+// ==========================================
+// PHASE 14: PINNED PROMPTS
+// ==========================================
+async function loadPinnedPrompts() {
+    const container = document.getElementById('pinned-prompts-bar');
+    if (!container) return;
+    try {
+        const resp = await fetch(`${API_BASE}/pinned-prompts`, { headers: getAuthHeader() });
+        const data = await resp.json();
+        container.innerHTML = '';
+        if (data.prompts && data.prompts.length > 0) {
+            data.prompts.forEach(p => {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-sm';
+                btn.style.cssText = 'margin:2px 4px;font-size:0.85em;';
+                btn.textContent = `${p.icon} ${p.label}`;
+                btn.onclick = () => { document.getElementById('chat-input').value = p.prompt; };
+                container.appendChild(btn);
+            });
+        }
+    } catch (e) { }
+}
+
+async function pinCurrentPrompt() {
+    const input = document.getElementById('chat-input');
+    if (!input || !input.value.trim()) return;
+    const label = prompt("Give this prompt a short label:");
+    if (!label) return;
+    await fetch(`${API_BASE}/pinned-prompts`, {
+        method: 'POST',
+        headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ label, prompt: input.value.trim() })
+    });
+    loadPinnedPrompts();
+}
+
+// ==========================================
+// PHASE 14: CHAT EXPORT
+// ==========================================
+async function exportCurrentChat(format = 'markdown') {
+    const chatId = window._currentChatId;
+    if (!chatId) { alert('No chat selected.'); return; }
+    try {
+        const resp = await fetch(`${API_BASE}/chat/${chatId}/export?format=${format}`, { headers: getAuthHeader() });
+        const text = await resp.text();
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `chat_export.${format === 'markdown' ? 'md' : 'txt'}`;
+        a.click();
+        URL.revokeObjectURL(url);
+    } catch (e) { alert('Export failed: ' + e.message); }
+}
+
+// ==========================================
+// PHASE 14: DOCUMENT UPLOAD (RAG CHAT)
+// ==========================================
+async function uploadDocForRAG() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.docx,.doc,.txt,.csv,.md';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            const resp = await fetch(`${API_BASE}/chat/upload-doc`, {
+                method: 'POST',
+                headers: getAuthHeader(),
+                body: formData
+            });
+            const data = await resp.json();
+            if (resp.ok) {
+                alert(`✅ ${data.message}\n\nDoc ID: ${data.doc_id}`);
+                window._activeDocId = data.doc_id;
+            } else {
+                alert('Upload failed: ' + (data.detail || 'Error'));
+            }
+        } catch (err) { alert('Upload error: ' + err.message); }
+    };
+    input.click();
+}
+
+// ==========================================
+// PHASE 14: ONBOARDING WIZARD
+// ==========================================
+async function checkOnboarding() {
+    try {
+        const resp = await fetch(`${API_BASE}/onboarding/status`, { headers: getAuthHeader() });
+        const data = await resp.json();
+        if (data.dismissed || data.all_complete) return;
+        showOnboardingWizard(data);
+    } catch (e) { }
+}
+
+function showOnboardingWizard(data) {
+    const overlay = document.createElement('div');
+    overlay.id = 'onboarding-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center;';
+    let stepsHtml = data.steps.map(s => `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-color);">
+            <span style="font-size:1.5em;">${s.complete ? '✅' : '⬜'}</span>
+            <div>
+                <strong>${s.label}</strong>
+                ${!s.complete ? `<br><button class="btn btn-sm" onclick="navigateTo('${s.route.toLowerCase()}');document.getElementById('onboarding-overlay').remove();">Go →</button>` : ''}
+            </div>
+        </div>
+    `).join('');
+    overlay.innerHTML = `
+        <div style="background:var(--card-bg);border-radius:16px;padding:32px;max-width:460px;width:90%;">
+            <h2>🐺 Welcome to Wolfclaw!</h2>
+            <p style="color:var(--text-muted);">Complete these steps to get started (${data.progress}/${data.total})</p>
+            <div style="background:var(--accent-color);height:6px;border-radius:3px;margin:12px 0;">
+                <div style="background:#fff;height:100%;border-radius:3px;width:${(data.progress / data.total) * 100}%;"></div>
+            </div>
+            ${stepsHtml}
+            <button class="btn" style="margin-top:16px;width:100%;" onclick="dismissOnboarding()">Skip for Now</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+}
+
+async function dismissOnboarding() {
+    await fetch(`${API_BASE}/onboarding/dismiss`, { method: 'POST', headers: getAuthHeader() });
+    document.getElementById('onboarding-overlay')?.remove();
+}
+
+// ==========================================
+// PHASE 16: WALLET & USAGE DASHBOARD
+// ==========================================
+
+async function loadWalletBotsDropdown() {
+    const select = document.getElementById('wallet-bot-select');
+    if (!select) return;
+
+    // Check if bots are loaded
+    if (Object.keys(activeBots).length === 0) {
+        // Fetch them if not
+        try {
+            const resp = await fetch(`${API_BASE}/bots/`);
+            const data = await resp.json();
+            if (resp.ok && data.bots) {
+                activeBots = data.bots;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    select.innerHTML = '<option value="">Select a Bot to View</option>';
+    for (const [id, bot] of Object.entries(activeBots)) {
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = `${bot.name} (${bot.model})`;
+        select.appendChild(opt);
+    }
+}
+
+async function loadWalletData() {
+    const botId = document.getElementById('wallet-bot-select').value;
+    const container = document.getElementById('wallet-metrics-container');
+
+    if (!botId) {
+        container.style.display = 'none';
+        return;
+    }
+
+    try {
+        const resp = await fetch(`${API_BASE}/wallet/summary/${botId}`);
+        const data = await resp.json();
+
+        if (resp.ok && data.wallet) {
+            container.style.display = 'block';
+
+            document.getElementById('wallet-today-spend').innerText = `$${data.wallet.today_spend.toFixed(4)}`;
+            document.getElementById('wallet-remaining-budget').innerText = `$${data.wallet.remaining.toFixed(4)}`;
+            document.getElementById('wallet-daily-budget').innerText = `$${data.wallet.daily_budget.toFixed(4)}`;
+
+            const remainingColor = data.wallet.remaining > 0 ? "var(--success-color)" : "var(--danger-color)";
+            document.getElementById('wallet-remaining-budget').style.color = remainingColor;
+        } else {
+            alert("Failed to load wallet data: " + (data.detail || "Unknown error"));
+        }
+    } catch (err) {
+        console.error("Failed to load wallet data", err);
+        alert("Connection error fetching wallet data.");
+    }
+}
+
+async function updateWalletBudget() {
+    const botId = document.getElementById('wallet-bot-select').value;
+    const amount = document.getElementById('wallet-new-budget').value;
+    const statusLabel = document.getElementById('status-wallet-update');
+
+    if (!botId) {
+        statusLabel.innerHTML = '<span style="color:var(--danger-color);">Select a bot first.</span>';
+        return;
+    }
+
+    if (amount === '' || parseFloat(amount) < 0) {
+        statusLabel.innerHTML = '<span style="color:var(--danger-color);">Enter a valid amount.</span>';
+        return;
+    }
+
+    const parsedAmount = parseFloat(amount);
+    statusLabel.innerText = "Updating...";
+
+    try {
+        const resp = await fetch(`${API_BASE}/wallet/setup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                bot_id: botId,
+                daily_budget: parsedAmount
+            })
+        });
+
+        const data = await resp.json();
+
+        if (resp.ok) {
+            statusLabel.innerHTML = '<i class="fa-solid fa-check" style="color:var(--success-color);"></i> Updated!';
+            document.getElementById('wallet-new-budget').value = '';
+            // Refresh to show changes immediately
+            loadWalletData();
+            setTimeout(() => { statusLabel.innerText = ''; }, 3000);
+        } else {
+            statusLabel.innerHTML = `<span style="color:var(--danger-color);">Error: ${data.detail || 'Unknown'}</span>`;
+        }
+    } catch (err) {
+        statusLabel.innerHTML = '<span style="color:var(--danger-color);">Connection error.</span>';
+    }
+}
+
+// ==========================================
+// PHASE 8: AUTOMATION STUDIO (MACROS & MAGIC WAND)
+// ==========================================
+let currentMacroSession = null;
+
+async function generateMagicFlow() {
+    const prompt = document.getElementById('magic-flow-prompt').value.trim();
+    if (!prompt) return alert("Please enter a goal.");
+
+    document.getElementById('magic-flow-result').style.display = 'none';
+    const btn = document.querySelector('#view-automation .btn-primary');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Channeling...';
+    btn.disabled = true;
+
+    try {
+        const resp = await fetch(`${API_BASE}/flows/magic`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        });
+
+        const data = await resp.json();
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+
+        if (resp.ok && data.flow_data) {
+            document.getElementById('magic-flow-result').style.display = 'block';
+            document.getElementById('magic-flow-json').textContent = JSON.stringify(data.flow_data, null, 2);
+            window._lastMagicFlow = data.flow_data;
+        } else {
+            alert("Error: " + (data.detail || "Unknown erroer"));
+        }
+    } catch (err) {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        alert("Connection Error.");
+    }
+}
+
+function downloadMagicFlow() {
+    if (!window._lastMagicFlow) return;
+    const blob = new Blob([JSON.stringify(window._lastMagicFlow, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "magic_flow.json";
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+async function loadMagicFlowToCanvas() {
+    if (!window._lastMagicFlow) return alert("Generate a Magic Flow first!");
+
+    try {
+        const resp = await fetch(`${API_BASE}/flows/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+            body: JSON.stringify({
+                name: "Magic Flow " + new Date().toLocaleTimeString(),
+                description: "Auto-generated from Automation Studio"
+            })
+        });
+        const data = await resp.json();
+
+        if (resp.ok) {
+            await loadFlows();
+            await openFlowEditor(data.flow_id);
+            importFlowToDrawflow(window._lastMagicFlow);
+            await saveFlowData();
+            switchView('flows');
+        } else {
+            alert("Failed to create new flow container: " + (data.detail || "Unknown error"));
+        }
+    } catch (err) {
+        alert("Connection error creating flow canvas.");
+    }
+}
+
+async function startMacroRecording() {
+    try {
+        const resp = await fetch(`${API_BASE}/macros/start`, { method: 'POST' });
+        const data = await resp.json();
+
+        if (resp.ok) {
+            document.getElementById('btn-start-macro').disabled = true;
+            document.getElementById('btn-stop-macro').disabled = false;
+
+            const container = document.getElementById('macro-status-container');
+            container.style.display = 'block';
+            document.getElementById('macro-status-text').textContent = "Recording in progress... Perform your actions on screen.";
+
+            // Pulsing red dot
+            container.querySelector('.status-indicator').innerHTML = '<span class="live-dot" style="background: var(--danger-color);"></span>';
+            document.getElementById('macro-analysis-section').style.display = 'none';
+        } else {
+            alert("Failed to start recording: " + data.detail);
+        }
+    } catch (err) {
+        alert("Connection error fetching Macro API.");
+    }
+}
+
+async function stopMacroRecording() {
+    try {
+        const resp = await fetch(`${API_BASE}/macros/stop`, { method: 'POST' });
+        const data = await resp.json();
+
+        if (resp.ok) {
+            document.getElementById('btn-start-macro').disabled = false;
+            document.getElementById('btn-stop-macro').disabled = true;
+
+            document.getElementById('macro-status-text').textContent = "Recording stopped. Ready for analysis.";
+            document.querySelector('#macro-status-container .status-indicator').innerHTML = '<i class="fa-solid fa-check" style="color:var(--success-color);"></i>';
+
+            currentMacroSession = data.session_id;
+            document.getElementById('macro-analysis-section').style.display = 'block';
+        } else {
+            alert("Failed to stop recording: " + data.detail);
+        }
+    } catch (err) {
+        alert("Connection error fetching Macro API.");
+    }
+}
+
+async function analyzeMacroSession() {
+    if (!currentMacroSession) return alert("No session recorded yet.");
+
+    const btn = document.querySelector('#macro-analysis-section .btn-primary');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing Vision Data...';
+    btn.disabled = true;
+
+    try {
+        const resp = await fetch(`${API_BASE}/macros/${currentMacroSession}/analyze`, { method: 'POST' });
+        const data = await resp.json();
+
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+
+        if (resp.ok && data.flow_data) {
+            alert("Analysis Complete! Flow JSON successfully generated.");
+
+            // Re-use the magic flow result container to show the macro JSON
+            document.getElementById('magic-flow-result').style.display = 'block';
+            document.getElementById('magic-flow-json').textContent = JSON.stringify(data.flow_data, null, 2);
+            window._lastMagicFlow = data.flow_data;
+
+        } else {
+            alert("Analysis failed: " + (data.detail || "Unknown error"));
+        }
+    } catch (err) {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        alert("Connection error during analysis.");
     }
 }

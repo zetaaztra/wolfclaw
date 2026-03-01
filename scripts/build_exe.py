@@ -75,6 +75,8 @@ def build_windows_exe():
         "--hidden-import", "pyautogui",
         "--hidden-import", "PIL",
         "--hidden-import", "webview",
+        "--hidden-import", "cv2",
+        "--hidden-import", "numpy",
         
         "--icon", str(project_root / "static" / "img" / "wolfclaw-logo.ico"),
         str(launcher_script)

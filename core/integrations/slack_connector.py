@@ -4,7 +4,6 @@ from slack_sdk.errors import SlackApiError
 
 def post_to_slack(channel: str, message: str):
     """Post a message to a Slack channel using SLACK_BOT_TOKEN."""
-    # TODO: Fetch this from user workspace config in production
     token = os.environ.get("SLACK_BOT_TOKEN")
     
     if not token:

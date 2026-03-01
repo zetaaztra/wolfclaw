@@ -16,7 +16,6 @@ def get_google_creds():
     """Gets valid user credentials from storage."""
     creds = None
     # Assuming local desktop first - token.json
-    # TODO: In production, store this securely per-user in Supabase or local_db
     token_path = os.path.join(os.path.dirname(__file__), 'google_token.json')
     creds_path = os.path.join(os.path.dirname(__file__), 'google_credentials.json')
 

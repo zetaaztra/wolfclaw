@@ -105,6 +105,27 @@ def main():
     daemon = threading.Thread(target=start_backend, args=(port, base_dir, logger), daemon=True)
     daemon.start()
 
+    logger.info("Starting Proactive Background Agent...")
+    try:
+        from core.proactive_agent import proactive_daemon
+        proactive_daemon.start()
+    except Exception as e:
+        logger.error(f"Failed to start proactive agent: {e}")
+
+    logger.info("Starting Clipboard Agent...")
+    try:
+        from core.clipboard_agent import clipboard_agent
+        clipboard_agent.start()
+    except Exception as e:
+        logger.error(f"Failed to start clipboard agent: {e}")
+
+    logger.info("Starting Task Scheduler...")
+    try:
+        from core.task_scheduler import task_scheduler
+        task_scheduler.start()
+    except Exception as e:
+        logger.error(f"Failed to start task scheduler: {e}")
+
     logger.info("Waiting for server to boot (Health Check)...")
     if wait_for_backend(url, logger):
         logger.info(f"Server ready! Opening Native Window at {url}")

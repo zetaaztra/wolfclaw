@@ -25,6 +25,9 @@ Wolfclaw is built for people who want the power of AI without the risks of shari
 *   **Smart Memory**: Unlike other AI, Wolfclaw agents actually "remember" you. They get better at their jobs as they learn how you work and what you prefer.
 *   **Visual Control**: Use a beautiful, easy-to-understand dashboard to see how your bots are thinking. It’s like having a "War Room" for your projects.
 *   **Fast and Local**: If you have a powerful computer, you can run everything for free without paying for expensive monthly subscriptions. 
+*   **Plugin App Store**: Browse and instantly install community-built tools, scripts, and capabilities directly into your orchestrator.
+*   **Proactive Agents**: Set up "invisible" agents that run autonomously in the background, monitoring your data or environment without needing a prompt.
+*   **Multi-Agent Swarms**: Group bots into structured "crews." A Manager bot breaks down your complex tasks and delegates work to its Sub-bots to solve massive problems in parallel.
 
 ---
 
@@ -106,6 +109,37 @@ For users requiring pre-packaged environments, Wolfclaw is available in the foll
 > For instructions on how to build these distributions from source, see the **[Build Guide](BUILD_GUIDE.md)**.
 
 ---
+
+---
+
+## 🐺 The Wolfclaw Fleet
+
+| Fleet Distribution | Platform | Core Use Case | Primary Interface |
+| :--- | :--- | :--- | :--- |
+| **Native (.exe)** | Windows | Full Desktop OS Control | Webview GUI + API |
+| **Linux (.deb)** | Ubuntu/Debian | Server/Workstation Control | Webview GUI + CLI |
+| **CLI** | All | Terminal-first Automation | Shell / Powershell |
+| **Streamlit / Vite** | Cloud/Local | Web-based Orchestration | Browser-based GUI |
+| **Legacy** | All | Modular / Core Library | Source-only / API |
+
+### 🛠️ Feature Matrix (Fleet Parity)
+
+| Feature | Native (.exe) | Linux (.deb) | CLI | Streamlit | Legacy |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Multi-Agent Chat** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Flow Orchestration** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Macro Recorder/Sovereign** | ✅ | ✅ | ❌ | ❌ | ✅ |
+| **Plugin Marketplace** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Real-Time Activity Feed** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Webhook Triggers** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Bot Export/Import** | ✅ | ✅ | ❌ | ✅ | ✅ |
+| **Conversation Memory Search** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Clipboard Agent** | ✅ | ✅ | ❌ | ❌ | ✅ |
+| **Scheduled Tasks** | ✅ | ✅ | ❌ | ✅ | ✅ |
+| **Voice I/O (TTS/STT)** | ✅ | ✅ | ❌ | ✅ | ❌ |
+| **Screenshot-to-Task (VLM)** | ✅ | ✅ | ❌ | ✅ | ✅ |
+| **Multilingual Prompts** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Remote SSH Control** | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ---
 

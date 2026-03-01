@@ -1,5 +1,6 @@
 # Environments
 .env
+.env.*
 .venv
 env/
 venv/
@@ -20,6 +21,8 @@ build/
 *.exe
 *.deb
 *.msi
+*.pkg
+*.dmg
 
 # Massive Folders (Working copies / Build results)
 Wolfclaw-Worked/
@@ -29,10 +32,15 @@ nanoclaw/build/
 nanoclaw/dist/
 
 # Database / Local State
+*.db
+*.db-journal
 *.sqlite
 *.sqlite3
 wolfclaw_local.db
+local_db.sqlite3
+local_wolfclaw.db
 ~/.wolfclaw/
+user_data/
 
 # IDEs
 .idea/
@@ -43,3 +51,13 @@ wolfclaw_local.db
 # OS generated files
 .DS_Store
 Thumbs.db
+.fseventsd
+.Spotlight-V100
+.Trashes
+
+# Miscellaneous
+git commands.txt
+*.bak
+*.tmp
+temp/
+data/

@@ -14,20 +14,14 @@ staging_dir="build/wolfclaw_app"
 mkdir -p "$staging_dir"
 cp -r core auth channels api static "$staging_dir/"
 
-pyinstaller --noconfirm --onedir --windowed --name Wolfclaw --clean \
-    --add-data "$staging_dir:wolfclaw_app" \
-    --hidden-import uvicorn --hidden-import fastapi --hidden-import pydantic \
-    --collect-data litellm \
-    --collect-all uvicorn --collect-all fastapi \
-    --hidden-import webview \
-    --hidden-import pyautogui --hidden-import playwright --hidden-import PIL --hidden-import webview \
+    --hidden-import pyautogui --hidden-import playwright --hidden-import PIL --hidden-import webview --hidden-import pyperclip \
     desktop_launcher.py
 
 # 1b. Build CLI with PyInstaller
 echo "Step 1b: Running PyInstaller for CLI..."
 pyinstaller --noconfirm --onefile --console --name Wolfclaw_CLI --clean \
     --add-data "$staging_dir:wolfclaw_app" \
-    --hidden-import typer --hidden-import rich \
+    --hidden-import typer --hidden-import rich --hidden-import pyperclip \
     --collect-data litellm \
     cli.py
 
@@ -48,7 +42,7 @@ Version: 1.0.0
 Section: utils
 Priority: optional
 Architecture: amd64
-Depends: python3, libgtk-3-0, libwebkit2gtk-4.1-0 | libwebkit2gtk-4.0-37
+Depends: python3, libgtk-3-0, libwebkit2gtk-4.1-0 | libwebkit2gtk-4.0-37, xclip
 Maintainer: Wolfclaw
 Description: Wolfclaw AI Command Center
  A locally executable AI agent that can control your computer, terminal, and browser.

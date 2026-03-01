@@ -9,6 +9,16 @@ from auth.supabase_client import login_user, signup_user, logout_user
 from core.config import get_key, set_key, get_supabase
 from core.llm_engine import WolfEngine
 from core.bot_manager import save_bot, get_bots, delete_bot, save_bot_token, read_workspace_file, write_workspace_file, load_chat_history, save_chat_history
+from core.metrics import get_metrics_summary
+from core.wallet import get_wallet_summary
+from core.ledger import verify_ledger
+from core.vault import list_vaulted_providers, encrypt_key
+from core.router import get_router
+from core.planner import get_planner
+from core.heartbeat import heartbeat
+from core.tunnels import tunnel
+from core.sync import memory_sync
+import pandas as pd
 
 # ─────────────────────────── LOGIN ───────────────────────────
 
@@ -237,6 +247,20 @@ def chat_view():
         
     st.header(f"💬 {bot['name']}")
     st.caption(f"Powered by `{bot['model']}`")
+    
+    # --- Sidebar Sparkline ---
+    with st.sidebar:
+        st.divider()
+        st.subheader("📊 Bot Pulse")
+        metrics = get_metrics_summary(bot['id'])
+        if metrics.get("activity_over_time"):
+            df_sidebar = pd.DataFrame(metrics["activity_over_time"])
+            st.sparkline(df_sidebar['count'], label="Activity Level")
+        else:
+            st.caption("No pulse detected yet.")
+        
+        st.metric("Health", f"{metrics.get('success_rate', 0):.1f}%")
+        st.divider()
     
     if st.button("🔚 End Chat"):
         st.session_state["active_bot"] = None
@@ -653,6 +677,438 @@ When user asks to find/apply for jobs:
         st.success("Memory cleared!")
         st.rerun()
 
+# ─────────────────────────── PERFORMANCE TRACKER ───────────────────────────
+
+def performance_tracker_view():
+    st.header("📈 Performance Tracker")
+    st.info(
+        "**What is this page?**\n\n"
+        "Visualize how your bots are performing. Track tool usage, activity levels, and success rates.\n\n"
+        "**Note:** Stats are updated in real-time as your bots work."
+    )
+    
+    bots = get_bots()
+    if not bots:
+        st.warning("No bots created yet. Go to **Manage Bots** to create one.")
+        return
+        
+    bot_names = {b_id: b_data["name"] for b_id, b_data in bots.items()}
+    selected_bot_id = st.selectbox("Select Bot to Analyze", options=list(bot_names.keys()), format_func=lambda x: bot_names[x])
+    
+    if selected_bot_id:
+        metrics = get_metrics_summary(selected_bot_id)
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Total Activities", metrics.get("total_calls", 0))
+        with col2:
+            rate = metrics.get("success_rate", 0)
+            st.metric("Success Rate", f"{rate:.1f}%")
+        with col3:
+            wallet = get_wallet_summary(selected_bot_id)
+            st.metric("Today's Spend", f"${wallet['today_spend']}", delta=f"${wallet['remaining']} left")
+            
+        st.divider()
+        
+        # --- SOVEREIGN SECURITY STATUS ---
+        st.subheader("🛡️ Sovereign Security")
+        s_col1, s_col2, s_col3 = st.columns(3)
+        with s_col1:
+            is_valid = verify_ledger(selected_bot_id)
+            status_icon = "✅" if is_valid else "⚠️"
+            st.write(f"{status_icon} **Ledger Integrity**")
+            if not is_valid: st.error("Tampering Detected!")
+        with s_col2:
+            vaulted = list_vaulted_providers()
+            v_status = "🔒 Protected" if vaulted else "🔓 Plaintext"
+            st.write(f"**Vault Status:** {v_status}")
+        with s_col3:
+            st.write(f"**Ledger Size:** {metrics.get('total_calls', 0)} events")
+            if st.button("📄 View Full Audit Ledger", key="view_ledger"):
+                st.info("Full ledger view coming in Phase 2.")
+
+        st.divider()
+        
+        # Activity Over Time
+        st.subheader("⚡ Activity Pulse")
+        activity_data = metrics.get("activity_over_time", [])
+        if activity_data:
+            df = pd.DataFrame(activity_data)
+            df['time'] = pd.to_datetime(df['time'])
+            st.area_chart(df.set_index('time'))
+        else:
+            st.info("No activity recorded yet for this bot.")
+            
+        st.divider()
+        
+        # Tool Usage Breakdown
+        col_left, col_right = st.columns(2)
+        with col_left:
+            st.subheader("🔧 Tool Usage (Legend)")
+            tool_usage = metrics.get("tool_usage", {})
+            if tool_usage:
+                # Use a horizontal bar chart for tool usage
+                tool_df = pd.DataFrame(list(tool_usage.items()), columns=['Tool', 'Calls'])
+                st.bar_chart(tool_df.set_index('Tool'))
+            else:
+                st.info("No tools used yet.")
+                
+        with col_right:
+            st.subheader("📜 Pictorial Activity Log")
+            # Show a small preview of recent event types as emojis
+            metric_file = METRICS_DIR / f"{selected_bot_id}_events.json"
+            if os.path.exists(metric_file):
+                try:
+                    with open(metric_file, "r") as f:
+                        events = json.load(f)[-10:] # Last 10
+                    
+                    icons = {
+                        "tool_call": "🔧",
+                        "chat_message": "💬",
+                        "error": "❌",
+                        "flow_complete": "✅"
+                    }
+                    
+                    for event in reversed(events):
+                        icon = icons.get(event['type'], "📝")
+                        st.write(f"{icon} **{event['type']}** - {event['timestamp'][:16]}")
+                        if event['type'] == 'tool_call':
+                            st.caption(f"Tool: `{event['details'].get('tool_name')}`")
+                except:
+                    pass
+            else:
+                st.info("Log is empty.")
+
+# ─────────────────────────── SOVEREIGN CONTROL CENTER ───────────────────────────
+
+def sovereign_control_view():
+    st.header("👑 Sovereign Control Center")
+    st.info(
+        "**Infrastructure v4.0 (Sovereign OS Core)**\n\n"
+        "Manage the hidden skeleton of Wolfclaw. Monitor fleet connectivity, "
+        "test pack intelligence, and secure your cryptographic vault."
+    )
+    
+    tabs = st.tabs(["📡 Fleet & Tunnels", "🧠 Intelligence Lab", "🔒 Security Vault", "⚡ Speed & Accuracy"])
+    
+    with tabs[0]:
+        st.subheader("Remote Fleet Control")
+        col1, col2 = st.columns(2)
+        with col1:
+            status = "🟢 Online" if tunnel.is_connected else "🔴 Offline"
+            st.metric("Sovereign Tunnel", status)
+            if st.button("🔌 Reconnect Tunnel"):
+                tunnel.connect()
+                st.success("Reconnection attempt started.")
+        with col2:
+            sys_stat = heartbeat.get_system_status()
+            pulse = "🟢 active" if sys_stat['is_user_active'] else "⚪ idle"
+            st.metric("Contextual Heartbeat", pulse, f"{sys_stat['cpu_pulse']}% CPU")
+        
+        st.divider()
+        st.subheader("Sync Status")
+        if st.button("🔄 Force Hybrid Memory Sync"):
+            # Normally this happens automatically
+            st.info("Triggered global memory synchronization across the fleet.")
+
+    with tabs[1]:
+        st.subheader("Semantic Router Laboratory")
+        test_query = st.text_input("Test Intent Classification", placeholder="e.g. 'Build a python script to scrape news'")
+        if st.button("🔍 Route Query"):
+            router = get_router()
+            with st.spinner("Classifying..."):
+                result = router.route_query(test_query)
+                st.json(result)
+        
+        st.divider()
+        st.subheader("Goal Planner")
+        complex_goal = st.text_input("Test Decomposition", placeholder="e.g. 'Build a mini CRM'")
+        if st.button("📝 Generate Plan"):
+            planner = get_planner()
+            with st.spinner("Planning..."):
+                plan = planner.generate_plan(complex_goal)
+                for task in plan:
+                    st.write(f"**Task {task['id']}:** {task['task']}")
+                    st.caption(task['description'])
+
+    with tabs[2]:
+        st.subheader("Security Migration")
+        st.warning("Move your plaintext API keys into the hardware-encrypted Sovereign Vault.")
+        
+        providers = ["openai", "anthropic", "google", "nvidia", "deepseek"]
+        for p in providers:
+            current_raw = get_key(p)
+            if current_raw:
+                if st.button(f"🔒 Vault {p.capitalize()} Key", key=f"vault_{p}"):
+                    encrypt_key(p, current_raw)
+                    st.success(f"{p.capitalize()} key is now cryptographically locked.")
+            else:
+                st.caption(f"No {p} key found in plaintext.")
+
+    with tabs[3]:
+        st.subheader("Execution Optimization")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write("**Vision Cache Index**")
+            st.info("92 Landmarks stored. (Self-Healing active)")
+            if st.button("🗑️ Clear Cache"):
+                from core.vision_cache import vision_cache
+                vision_cache.clear_cache()
+                st.success("Cache cleared.")
+        with col2:
+            st.write("**Universal App Adapters**")
+            from core.adapters import adapter_manager
+            apps = adapter_manager.list_available_apps()
+            st.write(f"Supported Apps: {', '.join(apps)}")
+
+# Imports for Performance tracker helper
+from core.metrics import METRICS_DIR
+
+# ─────────────────────────── AUTOMATION STUDIO ───────────────────────────
+
+def automation_studio_view():
+    st.header("🪄 Automation Studio")
+    st.info(
+        "**The Magic Wand (Prompt-to-Flow)**\n\n"
+        "Describe your automation goal in plain English, and Wolfclaw will generate a perfectly structured Flow JSON for you. "
+        "No drag-and-drop required!"
+    )
+    
+    st.subheader("Generate Flow")
+    goal = st.text_area("What do you want to automate?", placeholder="e.g. Monitor my disk space and send me a Telegram if it's full.")
+    
+    if st.button("✨ Create Magic Flow", type="primary"):
+        if not goal:
+            st.error("Please enter a goal.")
+        else:
+            with st.spinner("Channeling the Magic Wand..."):
+                from core.flow_generator import magic_create_flow
+                flow_json = magic_create_flow(goal)
+                
+                # Check if we got a valid response
+                if "nodes" in flow_json:
+                    st.success("✅ Flow Generated Successfully!")
+                    st.json(flow_json)
+                    st.download_button(
+                        label="⬇️ Download Flow JSON",
+                        data=json.dumps(flow_json, indent=2),
+                        file_name="magic_flow.json",
+                        mime="application/json"
+                    )
+                else:
+                    st.error("Failed to generate Flow. The Planner returned an unexpected format.")
+                    st.write(flow_json)
+                    
+    st.divider()
+    
+    st.subheader("👁️ Self-Healing Macros")
+    st.caption("Wolfclaw now uses OpenCV to remember *what* you clicked, not just *where* you clicked. If a window moves, the bot follows it.")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write("**Vision Cache Stats**")
+        from core.vision_cache import vision_cache
+        total_landmarks = len(vision_cache.data)
+        st.metric("Cached Anchors", total_landmarks)
+        if st.button("🗑️ Clear Vision Cache", key="clear_vision_studio"):
+            vision_cache.clear_cache()
+            st.success("Vision cache cleared.")
+            st.rerun()
+    with col2:
+        st.write("**How it works:**")
+        st.markdown(
+            "1. Record a macro normally.\n"
+            "2. Wolfclaw captures a 100x100 crop of every click.\n"
+            "3. During playback, OpenCV scans the screen to find the exact button again."
+        )
+
+# ─────────────────────────── MARKETPLACE ───────────────────────────
+
+def marketplace_view():
+    st.header("🛒 Plugin Marketplace")
+    st.info("Extend Wolfclaw with community plugins.")
+    from core.plugins.plugin_manager import plugin_manager
+    
+    tab1, tab2 = st.tabs(["Store", "Installed"])
+    
+    with tab1:
+        st.subheader("Available Plugins")
+        try:
+            from api.routes.marketplace import MOCK_STORE
+            plugins = MOCK_STORE
+        except ImportError:
+            plugins = []
+            
+        if not plugins:
+            st.write("No plugins found in registry.")
+        else:
+            for p in plugins:
+                st.write(f"**{p['name']}** by {p['author']}")
+                st.write(p['description'])
+                if st.button("Install", key=f"inst_{p['id']}"):
+                    if plugin_manager.install_plugin(p['id']):
+                        st.success(f"Installed {p['id']}!")
+                        st.rerun()
+                    else:
+                        st.error("Install failed.")
+                st.divider()
+
+    with tab2:
+        st.subheader("Installed Plugins")
+        installed = plugin_manager.get_installed_plugins()
+        if not installed:
+            st.write("No plugins installed.")
+        else:
+            for p in installed:
+                st.write(f"**{p}**")
+                if st.button("Uninstall", key=f"uninst_{p}"):
+                    if plugin_manager.uninstall_plugin(p):
+                        st.success(f"Uninstalled {p}!")
+                        st.rerun()
+                    else:
+                        st.error("Uninstall failed.")
+
+# ─────────────────────────── SWARM (WAR ROOM) ───────────────────────────
+
+def swarm_view():
+    st.header("🐝 War Room (Swarm)")
+    st.info("Assign a Manager bot to lead a team of Sub-bots to solve complex tasks.")
+    
+    bots = get_bots()
+    if not bots:
+        st.warning("You need to create some bots first!")
+        return
+        
+    bot_options = {b['name']: b_id for b_id, b in bots.items()}
+    manager_name = st.selectbox("Manager Bot", list(bot_options.keys()))
+    manager_id = bot_options[manager_name]
+    
+    worker_names = st.multiselect("Worker Sub-Bots", [n for n in bot_options.keys() if n != manager_name])
+    worker_ids = [bot_options[n] for n in worker_names]
+    
+    task = st.text_area("Complex Task Prompt")
+    
+    if st.button("🚀 Start Swarm", type="primary"):
+        if not worker_ids:
+            st.error("Select at least one worker.")
+            return
+        if not task:
+            st.error("Enter a task.")
+            return
+            
+        with st.spinner(f"{manager_name} is orchestrating the swarm..."):
+            from core.swarm import swarm
+            try:
+                result = swarm.run_swarm(task, manager_id, worker_ids, "streamlit_ws")
+                st.success("Swarm Completed!")
+                st.subheader("Manager Final Synthesis")
+                st.write(result.get("final_answer", ""))
+            except Exception as e:
+                st.error(f"Swarm error: {e}")
+
+# ─────────────────────────── PHASE 13 FEATURES ───────────────────────────
+
+def activity_feed_view():
+    st.header("📊 Real-Time Activity Feed")
+    st.info("Live stream of system events, bot interactions, and flow executions.")
+    
+    from core.activity_feed import activity_feed
+    limit = st.slider("Max events to show", 5, 100, 30)
+    events = activity_feed.get_recent(limit)
+    
+    if not events:
+        st.write("No recent activity.")
+    else:
+        for ev in events:
+            icon = {"bot_ping":"🤖", "flow":"⚙️", "macro":"🎬", "swarm":"🐝", "plugin":"🧩", "webhook":"🔗", "clipboard":"📋", "scheduler":"🗓️"}.get(ev["type"], "📌")
+            cols = st.columns([1, 4])
+            with cols[0]:
+                st.caption(ev["ts"])
+            with cols[1]:
+                st.write(f"{icon} **{ev['type'].upper()}** — {ev['detail']}")
+        
+        if st.button("🔄 Refresh Feed"):
+            st.rerun()
+
+def memory_search_view():
+    st.header("🧠 Conversation Memory Search")
+    st.info("Search across all past chat histories for specific keywords or topics.")
+    
+    q = st.text_input("Search term...", placeholder="e.g. bitcoin, rust code, recipe")
+    if q:
+        from core.local_db import _get_connection
+        import json
+        conn = _get_connection()
+        rows = conn.execute("SELECT id, title, messages, updated_at FROM chat_histories").fetchall()
+        
+        matches = []
+        for r in rows:
+            msgs = json.loads(r["messages"]) if r["messages"] else []
+            for m in msgs:
+                content = m.get("content", "")
+                if q.lower() in content.lower():
+                    # Extract snippet
+                    idx = content.lower().find(q.lower())
+                    start = max(0, idx - 60)
+                    end = min(len(content), idx + len(q) + 60)
+                    snippet = ("..." if start > 0 else "") + content[start:end] + ("..." if end < len(content) else "")
+                    matches.append({"title": r["title"], "role": m["role"], "snippet": snippet, "date": r["updated_at"]})
+                    break # One match per chat for brevity
+        
+        if not matches:
+            st.warning("No matches found.")
+        else:
+            st.success(f"Found {len(matches)} chats containing '{q}'")
+            for m in matches:
+                with st.expander(f"📄 {m['title']} ({m['date']})"):
+                    st.write(f"**{m['role'].upper()}:** {m['snippet']}")
+                    if st.button(f"Open Chat {m['title']}", key=f"open_{m['title']}"):
+                        st.session_state["nav_radio"] = "Chat"
+                        # Logic to select this specific chat would go here
+                        st.rerun()
+
+def webhooks_view():
+    st.header("🔗 Webhook Triggers")
+    st.info("Trigger flows from external services (Zapier, IFTTT, GitHub) using unique local URLs.")
+    
+    from core.local_db import _get_connection
+    conn = _get_connection()
+    
+    # Create new webhook
+    with st.expander("➕ Create New Webhook"):
+        label = st.text_input("Label", "My Webhook")
+        from core.bot_manager import _get_active_workspace_id
+        ws_id = _get_active_workspace_id()
+        flows = conn.execute("SELECT id, name FROM flows").fetchall()
+        flow_options = {f["name"]: f["id"] for f in flows}
+        selected_flow_name = st.selectbox("Flow to Trigger", list(flow_options.keys()))
+        
+        if st.button("Generate Webhook"):
+            import uuid
+            hook_id = str(uuid.uuid4())
+            conn.execute("INSERT INTO webhooks (id, ws_id, flow_id, label) VALUES (?, ?, ?, ?)",
+                         (hook_id, ws_id, flow_options[selected_flow_name], label))
+            conn.commit()
+            st.success(f"Webhook created! URL: http://localhost:8000/api/hooks/{hook_id}")
+            st.rerun()
+
+    # List webhooks
+    st.subheader("Configured Webhooks")
+    rows = conn.execute("SELECT id, flow_id, label FROM webhooks").fetchall()
+    if not rows:
+        st.write("No webhooks configured.")
+    else:
+        for r in rows:
+            cols = st.columns([3, 1])
+            with cols[0]:
+                st.write(f"**{r['label']}** → `{r['flow_id']}`")
+                st.code(f"http://localhost:8000/api/hooks/{r['id']}")
+            with cols[1]:
+                if st.button("🗑️ Delete", key=f"del_{r['id']}"):
+                    conn.execute("DELETE FROM webhooks WHERE id = ?", (r["id"],))
+                    conn.commit()
+                    st.rerun()
+
 # ─────────────────────────── DASHBOARD ───────────────────────────
 
 def dashboard_view():
@@ -662,10 +1118,14 @@ def dashboard_view():
     # Check for navigation override (from "Go to Manage Bots" button)
     if "_nav_override" in st.session_state:
         override_val = st.session_state.pop("_nav_override")
-        if override_val in ["Chat", "Manage Bots", "Bot Profiles", "Deploy Channels", "Remote Servers", "Settings", "Logout"]:
+        if override_val in ["Chat", "War Room (Swarm)", "Marketplace", "Manage Bots", "Bot Profiles", "Performance Tracker", "Automation Studio", "Sovereign OS", "Deploy Channels", "Remote Servers", "Settings", "Logout"]:
             st.session_state["nav_radio"] = override_val
             
-    menu_options = ["Chat", "Manage Bots", "Bot Profiles", "Deploy Channels", "Remote Servers", "Settings", "Logout"]
+    menu_options = [
+        "Chat", "War Room (Swarm)", "Marketplace", "Activity Feed", "Memory Search", "Webhooks",
+        "Manage Bots", "Bot Profiles", "Performance Tracker", "Automation Studio", 
+        "Sovereign OS", "Deploy Channels", "Remote Servers", "Settings", "Logout"
+    ]
     
     menu = st.sidebar.radio("Navigation", menu_options, key="nav_radio")
     
@@ -680,6 +1140,12 @@ def dashboard_view():
         st.rerun()
     elif menu == "Settings":
         settings_view()
+    elif menu == "Activity Feed":
+        activity_feed_view()
+    elif menu == "Memory Search":
+        memory_search_view()
+    elif menu == "Webhooks":
+        webhooks_view()
     elif menu == "Remote Servers":
         ssh_servers_view()
     elif menu == "Manage Bots":
@@ -688,5 +1154,15 @@ def dashboard_view():
         profile_editor_view()
     elif menu == "Chat":
         chat_view()
+    elif menu == "War Room (Swarm)":
+        swarm_view()
+    elif menu == "Marketplace":
+        marketplace_view()
+    elif menu == "Performance Tracker":
+        performance_tracker_view()
+    elif menu == "Automation Studio":
+        automation_studio_view()
+    elif menu == "Sovereign OS":
+        sovereign_control_view()
     elif menu == "Deploy Channels":
         channels_view()

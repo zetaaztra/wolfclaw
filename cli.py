@@ -126,5 +126,196 @@ def chat(
         except Exception as e:
             print(f"[red]Error:[/red] {e}")
 
+
+# --- Flow Commands ---
+flow_app = typer.Typer(help="Manage and execute AI Flows")
+app.add_typer(flow_app, name="flow")
+
+@flow_app.command("create")
+def flow_create(prompt: str):
+    """Generate a new flow using the Magic Wand."""
+    from core.flow_generator import magic_create_flow
+    import json
+    print(f"[bold blue]Magic Wand[/bold blue]: Generating flow for '{prompt}'...")
+    try:
+        flow_json = magic_create_flow(prompt)
+        print("[green]Successfully generated flow![/green]")
+        print(json.dumps(flow_json, indent=2))
+    except Exception as e:
+        print(f"[red]Error:[/red] {e}")
+
+@flow_app.command("list")
+def flow_list():
+    """List all saved flows."""
+    from core.local_db import local_db
+    from auth.supabase_client import get_current_user
+    user = get_current_user()
+    ws_id = local_db.get_or_create_workspace(user["id"] if user else "local_user")
+    flows = local_db.get_flows_for_workspace(ws_id)
+    if not flows:
+        print("[yellow]No flows found in current workspace.[/yellow]")
+        return
+    print("[bold blue]Saved Flows:[/bold blue]")
+    for f in flows:
+        print(f"ID: [cyan]{f['id']}[/cyan] | Name: {f.get('name', 'Unnamed')}")
+
+@flow_app.command("run")
+def flow_run(flow_id: str):
+    """Execute a built flow by its ID."""
+    from core.orchestrator import run_flow
+    from core.local_db import local_db
+    flow = local_db.get_flow(flow_id)
+    if not flow:
+        print(f"[red]Flow {flow_id} not found.[/red]")
+        return
+    print(f"[bold blue]Running Flow:[/bold blue] {flow.get('name', 'Unnamed')}")
+    try:
+        results = run_flow(flow)
+        print("[green]Flow execution successful![/green]")
+        print(results)
+    except Exception as e:
+        print(f"[red]Error executing flow:[/red] {e}")
+
+# --- Macro Commands ---
+macro_app = typer.Typer(help="Record and manage self-healing macros")
+app.add_typer(macro_app, name="macro")
+
+@macro_app.command("start")
+def macro_start():
+    """Start recording a macro."""
+    from core.macro_recorder import recorder
+    try:
+        msg = recorder.start_recording()
+        print(f"[green]{msg}[/green]")
+    except Exception as e:
+        print(f"[red]Error:[/red] {e}")
+
+@macro_app.command("stop")
+def macro_stop():
+    """Stop the current macro recording."""
+    from core.macro_recorder import recorder
+    try:
+        msg = recorder.stop_recording()
+        print(f"[green]{msg}[/green]")
+    except Exception as e:
+        print(f"[red]Error:[/red] {e}")
+
+# --- Plugin Marketplace Commands ---
+plugin_app = typer.Typer(help="Manage plugins from the marketplace")
+app.add_typer(plugin_app, name="plugin")
+
+@plugin_app.command("install")
+def plugin_install(plugin_id: str):
+    """Install a plugin from the marketplace."""
+    from core.plugins.plugin_manager import plugin_manager
+    try:
+        success = plugin_manager.install_plugin(plugin_id)
+        if success:
+            print(f"[green]Successfully installed '{plugin_id}'.[/green]")
+        else:
+            print(f"[red]Failed to install '{plugin_id}'.[/red]")
+    except Exception as e:
+        print(f"[red]Error:[/red] {e}")
+
+@plugin_app.command("uninstall")
+def plugin_uninstall(plugin_id: str):
+    """Uninstall a local plugin."""
+    from core.plugins.plugin_manager import plugin_manager
+    try:
+        success = plugin_manager.uninstall_plugin(plugin_id)
+        if success:
+            print(f"[green]Successfully uninstalled '{plugin_id}'.[/green]")
+        else:
+            print(f"[red]Failed to uninstall '{plugin_id}'.[/red]")
+    except Exception as e:
+        print(f"[red]Error:[/red] {e}")
+
+# --- Swarm Commands ---
+swarm_app = typer.Typer(help="Orchestrate multi-agent swarms")
+app.add_typer(swarm_app, name="swarm")
+
+@swarm_app.command("run")
+def swarm_run(task: str, manager_id: str, worker_ids: str):
+    """Run a swarm orchestration. Workers should be comma-separated."""
+    from core.swarm import swarm
+    workers = [w.strip() for w in worker_ids.split(",") if w.strip()]
+    if not workers:
+        print("[red]Error: You must provide at least one worker ID.[/red]")
+        return
+    
+    print(f"[bold blue]Initiating Swarm Orchestration:[/bold blue]")
+    print(f"Task: {task}")
+    print(f"Manager: {manager_id} | Workers: {workers}")
+    try:
+        result = swarm.run_swarm(task=task, manager_bot_id=manager_id, worker_bot_ids=workers, workspace_id="cli_user")
+        print("[green]Swarm Task Complete![/green]\n")
+        print("[bold]Synthesis Report:[/bold]")
+        print(result.get("final_answer", ""))
+    except Exception as e:
+        print(f"[red]Error:[/red] {e}")
+
+# --- Phase 13: Activity, Webhooks, Memory ---
+activity_app = typer.Typer(help="View real-time agent activity")
+app.add_typer(activity_app, name="activity")
+
+@activity_app.command("log")
+def activity_log(limit: int = 20):
+    """Show recent activity logs."""
+    from core.activity_feed import activity_feed
+    events = activity_feed.get_recent(limit)
+    if not events:
+        print("[yellow]No recent activity.[/yellow]")
+        return
+    for ev in events:
+        print(f"[[blue]{ev['ts']}[/blue]] [bold]{ev['type'].upper()}[/bold] - {ev['detail']}")
+
+hook_app = typer.Typer(help="Manage webhook triggers for flows")
+app.add_typer(hook_app, name="hook")
+
+@hook_app.command("list")
+def hook_list():
+    """List all configured webhooks."""
+    from core.local_db import _get_connection
+    conn = _get_connection()
+    rows = conn.execute("SELECT id, flow_id, label FROM webhooks").fetchall()
+    if not rows:
+        print("[yellow]No webhooks found.[/yellow]")
+        return
+    for r in rows:
+        print(f"ID: [green]{r['id']}[/green] | Flow: {r['flow_id']} | Label: {r['label']}")
+
+@hook_app.command("trigger")
+def hook_trigger(hook_id: str):
+    """Manually trigger a webhook flow."""
+    import requests
+    try:
+        resp = requests.post(f"http://localhost:8501/api/hooks/{hook_id}")
+        print(f"[green]Triggered![/green] Status: {resp.status_code}")
+        print(resp.json())
+    except Exception as e:
+        print(f"[red]Error:[/red] {e}")
+
+memory_app = typer.Typer(help="Search chat memory")
+app.add_typer(memory_app, name="memory")
+
+@memory_app.command("search")
+def memory_search(q: str):
+    """Search all past chat histories for a keyword."""
+    from core.local_db import _get_connection
+    import json
+    conn = _get_connection()
+    rows = conn.execute("SELECT id, title, messages FROM chat_histories").fetchall()
+    found = False
+    for r in rows:
+        msgs = json.loads(r["messages"]) if r["messages"] else []
+        for m in msgs:
+            if q.lower() in m.get("content", "").lower():
+                print(f"\n[bold blue]Match in: {r['title']}[/bold blue] ({r['id']})")
+                print(f"[dim]{m.get('role')}:[/dim] {m.get('content')[:150]}...")
+                found = True
+                break
+    if not found:
+        print("[yellow]No matches found.[/yellow]")
+
 if __name__ == "__main__":
     app()

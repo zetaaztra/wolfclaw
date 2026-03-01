@@ -10,6 +10,11 @@ import logging
 from litellm import completion
 from .config import get_key
 from .tools import WOLFCLAW_TOOLS, execute_tool
+from .metrics import log_event
+from .ledger import log_mutation
+from .vault import decrypt_key
+from .heartbeat import heartbeat
+from .wallet import check_budget, log_spend
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +130,7 @@ class WolfEngine:
             if "llama" in actual_model and "/" not in actual_model:
                 actual_model = f"meta/{actual_model}"
             kwargs["model"] = f"nvidia_nim/{actual_model}"
-            key = get_key("nvidia")
+            key = decrypt_key("nvidia") or get_key("nvidia")
             kwargs["api_key"] = key
             os.environ["NVIDIA_NIM_API_KEY"] = key
             kwargs["parallel_tool_calls"] = False
@@ -133,22 +138,22 @@ class WolfEngine:
             actual_model = model.replace("deepseek/", "")
             kwargs["model"] = f"openai/{actual_model}"
             kwargs["api_base"] = "https://api.deepseek.com/v1"
-            key = get_key("deepseek")
+            key = decrypt_key("deepseek") or get_key("deepseek")
             kwargs["api_key"] = key
             os.environ["DEEPSEEK_API_KEY"] = key
 
         else:
             kwargs["model"] = model
             if model.startswith("gpt"):
-                key = get_key("openai")
+                key = decrypt_key("openai") or get_key("openai")
                 kwargs["api_key"] = key
                 os.environ["OPENAI_API_KEY"] = key
             elif model.startswith("claude"):
-                key = get_key("anthropic")
+                key = decrypt_key("anthropic") or get_key("anthropic")
                 kwargs["api_key"] = key
                 os.environ["ANTHROPIC_API_KEY"] = key
             elif model.startswith("gemini"):
-                key = get_key("google")
+                key = decrypt_key("google") or get_key("google")
                 kwargs["api_key"] = key
                 os.environ["GEMINI_API_KEY"] = key
             elif model.startswith("ollama"):
@@ -230,6 +235,12 @@ class WolfEngine:
             
         full_messages.extend(messages)
 
+        # --- BUDGET CHECK ---
+        if bot_id and not check_budget(bot_id):
+            print(f"CRITICAL: Bot {bot_id} has exceeded its daily budget. Execution blocked.")
+            log_mutation(bot_id, "budget_block", {"status": "failed", "reason": "Monthly/Daily budget reached"})
+            raise RuntimeError(f"Budget exceeded for bot {bot_id}")
+
         # Try primary model, then fallbacks
         models_to_try = [self.model_name] + self.fallback_models
         last_error = None
@@ -244,10 +255,14 @@ class WolfEngine:
                     
                     kwargs = self._build_completion_kwargs(model, full_messages, stream)
                     response = completion(**kwargs)
+                    if bot_id:
+                        log_event(bot_id, "chat_message", status="success", details={"model": model})
                     break # Success!
                 except Exception as e:
                     retries -= 1
                     last_error = e
+                    if bot_id:
+                        log_event(bot_id, "error", status="failed", details={"model": model, "error": str(e)})
                     if retries == 0:
                         logger.warning(f"Model {model} failed all retries: {e}")
                     else:
@@ -260,10 +275,21 @@ class WolfEngine:
                     # --- AGENTIC TOOL EXECUTION LOOP ---
                     max_loops = 10
                     loop_count = 0
+                    tool_history = []  # Track (tool_name, args) to detect loops
+                    
                     while getattr(response.choices[0].message, "tool_calls", None) and loop_count < max_loops:
                         loop_count += 1
                         
                         assist_msg = response.choices[0].message
+                        # Detect stagnation (Self-Correction Nerve)
+                        stuck = False
+                        if len(tool_history) >= 2:
+                            # If last 2 calls were identical, we are likely loop-stuck
+                            if tool_history[-1] == tool_history[-2]:
+                                stuck = True
+                                logger.warning("Loop detected! Triggering Strategy Shift.")
+                                log_mutation(bot_id, "self_correction", {"reason": "Repeated tool failure", "loop_count": loop_count})
+                        
                         message_dict = {
                             "role": "assistant",
                             "content": assist_msg.content,
@@ -280,7 +306,17 @@ class WolfEngine:
                             except json.JSONDecodeError:
                                 function_args = {}
                             
+                            tool_history.append((function_name, str(function_args)))
+                            
                             print(f"INFO: AI called tool: {function_name} ({function_args})")
+                            if bot_id:
+                                log_event(bot_id, "tool_call", status="success", details={"tool_name": function_name})
+                                log_mutation(bot_id, "tool_execution", {"tool_name": function_name, "args": function_args})
+                            
+                            if not heartbeat.is_safe_to_execute():
+                                logger.warning("Agent execution suspended: User activity detected (Heartbeat).")
+                                raise PermissionError("Execution blocked by Heartbeat: Machine is currently in use by user.")
+                            
                             tool_result = execute_tool(function_name, function_args)
                             
                             tool_msg = {
@@ -292,10 +328,24 @@ class WolfEngine:
                             full_messages.append(tool_msg)
                             messages.append(tool_msg)
                         
+                        # --- STRATEGY SHIFT (Self-Correction) ---
+                        if stuck:
+                            full_messages.append({
+                                "role": "system", 
+                                "content": "⚠️ STRATEGY SHIFT: You have attempted the same action twice with no progress. "
+                                           "Do NOT repeat the same tool call. Try a fundamentally different approach, or "
+                                           "ask the user for clarification if you are stuck."
+                            })
+
                         kwargs["messages"] = full_messages
                         response = completion(**kwargs)
                     # --- END TOOL LOOP ---
                     
+                    if not heartbeat.is_safe_to_execute():
+                        logger.warning("Agent execution suspended: User activity detected (Heartbeat).")
+                        # We return a simulated response if heartbeat is active
+                        raise PermissionError("Execution blocked by Heartbeat: Machine is currently in use by user.")
+
                     # Memory reflection (async-safe, non-blocking)
                     if bot_id:
                         try:
@@ -341,13 +391,20 @@ class WolfEngine:
                             estimated_cost=round(estimated_cost, 6),
                             response_time_ms=0
                         )
+                        
+                        # --- WALLET ENFORCEMENT ---
+                        if bot_id:
+                            log_spend(bot_id, estimated_cost)
+                            log_mutation(bot_id, "usage_logged", {"cost": estimated_cost, "tokens": total_tokens})
+                            
                     except Exception as usage_err:
                         logger.warning(f"Usage logging failed (non-critical): {usage_err}")
                     
                     return response
                 except Exception as e:
                     last_error = e
-                    logger.warning(f"Error processing response from {model}: {e}")
+                    import traceback
+                    logger.warning(f"Error processing response from {model}: {e}\n{traceback.format_exc()}")
                     # If this failed, we might still want to try the next model if possible, 
                     # but usually, if response was received it's a logic error here.
                     continue

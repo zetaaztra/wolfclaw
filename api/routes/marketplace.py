@@ -75,7 +75,7 @@ def execute_plugin_tool(name, kwargs):
     }
 ]
 
-@router.get("/")
+@router.get("/plugins")
 async def list_store_plugins():
     return {"plugins": [
         {"id": p["id"], "name": p["name"], "description": p["description"], "author": p["author"], "downloads": p["downloads"]}

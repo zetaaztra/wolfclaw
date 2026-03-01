@@ -107,7 +107,31 @@ class MacroRecorder:
         if pressed:
             if self.key_buffer:
                 self.flush_keys()
-            self.capture_step(f"Clicked {button} at ({int(x)}, {int(y)})", "click", {"x": int(x), "y": int(y), "button": str(button)})
+            
+            # Capture Anchor (100x100 crop)
+            ts = int(time.time() * 1000)
+            anchor_filename = f"anchor_{ts}.png"
+            anchor_path = self.session_dir / anchor_filename if self.session_dir else None
+            
+            if PIL_AVAILABLE and anchor_path:
+                try:
+                    # Capture 100x100 around the click
+                    bbox = (int(x)-50, int(y)-50, int(x)+50, int(y)+50)
+                    anchor_img = ImageGrab.grab(bbox=bbox)
+                    anchor_img.save(anchor_path)
+                except Exception:
+                    anchor_filename = None
+
+            self.capture_step(
+                f"Clicked {button} at ({int(x)}, {int(y)})", 
+                "click", 
+                {
+                    "x": int(x), 
+                    "y": int(y), 
+                    "button": str(button),
+                    "anchor_image": anchor_filename
+                }
+            )
 
     def on_press(self, key):
         current_time = time.time()
@@ -130,7 +154,15 @@ class MacroRecorder:
         if not self.key_buffer:
             return
         typed_string = "".join(self.key_buffer)
-        self.capture_step(f"Typed: '{typed_string}'", "type", {"text": typed_string})
+        
+        # Security filter for passwords/tokens
+        import re
+        if len(typed_string) >= 6 and " " not in typed_string and re.search(r'[A-Za-z]', typed_string) and (re.search(r'[0-9]', typed_string) or re.search(r'[^A-Za-z0-9\s]', typed_string)):
+            display_text = "***[HIDDEN FOR SECURITY]***"
+            self.capture_step("Typed secure text (Password/Token)", "type", {"text": display_text, "secure": True})
+        else:
+            self.capture_step(f"Typed: '{typed_string}'", "type", {"text": typed_string})
+            
         self.key_buffer = []
 
 # Global singleton

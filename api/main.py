@@ -12,9 +12,9 @@ app = FastAPI(title="Wolfclaw API", version="1.0.0")
 # We only allow the dashboard to communicate with its own backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:8501", "http://localhost:8501"],
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -24,7 +24,7 @@ async def health_check():
     return {"status": "ok"}
 
 # --- Include API Routers ---
-from api.routes import auth, bots, settings, remote, chat, channels, account, tools, templates, favorites, documents, history, knowledge, analytics, scheduler, reports, flows, integrations, macros, marketplace, flow_templates
+from api.routes import auth, bots, settings, remote, chat, channels, account, tools, templates, favorites, documents, history, knowledge, analytics, scheduler, reports, flows, integrations, macros, marketplace, flow_templates, swarm, activity, webhooks, bot_portable, memory_search, scheduler_routes, vision_chat, dashboard_home, rag_chat, notifications as notif_routes, pinned_prompts, chat_export, theme, vault, onboarding, bot_router, wallet
 
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(bots.router, prefix="/api/bots", tags=["Bot Management"])
@@ -47,6 +47,24 @@ app.include_router(integrations.router, prefix="/api/integrations", tags=["Integ
 app.include_router(macros.router, prefix="/api/macros", tags=["Macros"])
 app.include_router(marketplace.router, prefix="/api/marketplace", tags=["Marketplace"])
 app.include_router(flow_templates.router, prefix="/api", tags=["Flow Templates"])
+app.include_router(swarm.router, prefix="/api/swarm", tags=["Swarm"])
+app.include_router(activity.router, prefix="/api", tags=["Activity Feed"])
+app.include_router(webhooks.router, prefix="/api", tags=["Webhooks"])
+app.include_router(bot_portable.router, prefix="/api", tags=["Bot Import/Export"])
+app.include_router(memory_search.router, prefix="/api", tags=["Memory Search"])
+app.include_router(scheduler_routes.router, prefix="/api", tags=["Scheduled Tasks"])
+app.include_router(vision_chat.router, prefix="/api", tags=["Vision Chat"])
+# Phase 14 routes
+app.include_router(dashboard_home.router, prefix="/api", tags=["Dashboard Home"])
+app.include_router(rag_chat.router, prefix="/api", tags=["RAG Chat"])
+app.include_router(notif_routes.router, prefix="/api", tags=["Notifications"])
+app.include_router(pinned_prompts.router, prefix="/api", tags=["Pinned Prompts"])
+app.include_router(chat_export.router, prefix="/api", tags=["Chat Export"])
+app.include_router(theme.router, prefix="/api", tags=["Theme Engine"])
+app.include_router(vault.router, prefix="/api", tags=["Local Vault"])
+app.include_router(onboarding.router, prefix="/api", tags=["Onboarding"])
+app.include_router(bot_router.router, prefix="/api", tags=["Bot Router"])
+app.include_router(wallet.router, prefix="/api/wallet", tags=["Wallet"])
 
 # --- Serve Frontend SPA ---
 # Mount the static directory for CSS/JS assets

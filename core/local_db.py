@@ -210,22 +210,26 @@ def init_db():
         )
         ''')
 
-    # Scheduled tasks table (Phase 14)
+    # Scheduled tasks table (Phase 13/14)
     c.execute("PRAGMA table_info(scheduled_tasks)")
-    if not c.fetchall():
+    cols = c.fetchall()
+    col_names = [col['name'] for col in cols]
+    if cols and 'cron_expr' not in col_names:
+        c.execute("DROP TABLE scheduled_tasks")
+        cols = []
+        
+    if not cols:
         c.execute('''
         CREATE TABLE scheduled_tasks (
             id TEXT PRIMARY KEY,
-            workspace_id TEXT NOT NULL,
-            bot_id TEXT NOT NULL,
+            ws_id TEXT NOT NULL,
             name TEXT NOT NULL,
-            prompt TEXT NOT NULL,
-            schedule_type TEXT DEFAULT 'interval',
-            schedule_value TEXT NOT NULL,
-            is_active INTEGER DEFAULT 1,
-            last_run TIMESTAMP,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE
+            cron_expr TEXT NOT NULL DEFAULT '0 * * * *',
+            action_type TEXT NOT NULL DEFAULT 'flow',
+            action_id TEXT NOT NULL,
+            last_run TEXT,
+            enabled INTEGER DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         ''')
 
