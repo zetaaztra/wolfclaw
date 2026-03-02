@@ -54,7 +54,7 @@ def init_db():
     ''')
     
     c.execute('''
-    CREATE TABLE IF NOT EXISTS vault (
+    CREATE TABLE IF NOT EXISTS api_keys_vault (
         user_id TEXT PRIMARY KEY,
         openai_key TEXT,
         anthropic_key TEXT,
@@ -87,11 +87,11 @@ def init_db():
     ''')
     
     # --- SCHEMA MIGRATIONS ---
-    # Vault table
-    c.execute("PRAGMA table_info(vault)")
+    # api_keys_vault table
+    c.execute("PRAGMA table_info(api_keys_vault)")
     vault_cols = [col['name'] for col in c.fetchall()]
     if 'deepseek_key' not in vault_cols:
-        c.execute("ALTER TABLE vault ADD COLUMN deepseek_key TEXT")
+        c.execute("ALTER TABLE api_keys_vault ADD COLUMN deepseek_key TEXT")
 
     # Users table migration for recovery key
     c.execute("PRAGMA table_info(users)")
@@ -409,18 +409,18 @@ def delete_bot(bot_id: str):
 def set_key_local(user_id: str, col_name: str, key: str):
     conn = _get_connection()
     c = conn.cursor()
-    c.execute("SELECT user_id FROM vault WHERE user_id = ?", (user_id,))
+    c.execute("SELECT user_id FROM api_keys_vault WHERE user_id = ?", (user_id,))
     if c.fetchone():
-        c.execute(f"UPDATE vault SET {col_name} = ? WHERE user_id = ?", (key, user_id))
+        c.execute(f"UPDATE api_keys_vault SET {col_name} = ? WHERE user_id = ?", (key, user_id))
     else:
-        c.execute(f"INSERT INTO vault (user_id, {col_name}) VALUES (?, ?)", (user_id, key))
+        c.execute(f"INSERT INTO api_keys_vault (user_id, {col_name}) VALUES (?, ?)", (user_id, key))
     conn.commit()
     conn.close()
 
 def get_key_local(user_id: str, col_name: str) -> str:
     conn = _get_connection()
     c = conn.cursor()
-    c.execute(f"SELECT {col_name} FROM vault WHERE user_id = ?", (user_id,))
+    c.execute(f"SELECT {col_name} FROM api_keys_vault WHERE user_id = ?", (user_id,))
     row = c.fetchone()
     conn.close()
     if row and row[col_name]:

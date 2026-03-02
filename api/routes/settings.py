@@ -11,7 +11,7 @@ class KeyRequest(BaseModel):
     provider: str
     key: str
 
-@router.get("")
+@router.get("/")
 async def get_settings(user: dict = Depends(get_current_user)):
     """Retrieve all API keys for the current workspace (Local Desktop Mode only)"""
     if os.environ.get("WOLFCLAW_ENVIRONMENT") != "desktop":
@@ -27,7 +27,7 @@ async def get_settings(user: dict = Depends(get_current_user)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("")
+@router.post("/")
 async def save_setting(req: KeyRequest, user: dict = Depends(get_current_user)):
     """Save an API key securely"""
     if os.environ.get("WOLFCLAW_ENVIRONMENT") != "desktop":
@@ -42,7 +42,7 @@ async def save_setting(req: KeyRequest, user: dict = Depends(get_current_user)):
 class KeyDeleteRequest(BaseModel):
     provider: str
 
-@router.delete("")
+@router.delete("/")
 async def delete_setting(req: KeyDeleteRequest, user: dict = Depends(get_current_user)):
     """Clear/delete a saved API key"""
     if os.environ.get("WOLFCLAW_ENVIRONMENT") != "desktop":

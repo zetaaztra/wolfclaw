@@ -55,7 +55,7 @@ def init_db():
     ''')
     
     c.execute('''
-    CREATE TABLE IF NOT EXISTS vault (
+    CREATE TABLE IF NOT EXISTS api_keys_vault (
         user_id TEXT PRIMARY KEY,
         openai_key TEXT,
         anthropic_key TEXT,
@@ -89,13 +89,13 @@ def init_db():
     ''')
     
     # --- SCHEMA MIGRATIONS ---
-    # Vault table
-    c.execute("PRAGMA table_info(vault)")
+    # api_keys_vault table
+    c.execute("PRAGMA table_info(api_keys_vault)")
     vault_cols = [col['name'] for col in c.fetchall()]
     if 'deepseek_key' not in vault_cols:
-        c.execute("ALTER TABLE vault ADD COLUMN deepseek_key TEXT")
+        c.execute("ALTER TABLE api_keys_vault ADD COLUMN deepseek_key TEXT")
     if 'dynamic_keys' not in vault_cols:
-        c.execute("ALTER TABLE vault ADD COLUMN dynamic_keys TEXT DEFAULT '{}'")
+        c.execute("ALTER TABLE api_keys_vault ADD COLUMN dynamic_keys TEXT DEFAULT '{}'")
 
     # Users table migration for recovery key
     c.execute("PRAGMA table_info(users)")
@@ -461,7 +461,7 @@ def delete_bot(bot_id: str):
 def set_key_local(user_id: str, col_name: str, key: str):
     conn = _get_connection()
     c = conn.cursor()
-    c.execute("SELECT user_id, dynamic_keys FROM vault WHERE user_id = ?", (user_id,))
+    c.execute("SELECT user_id, dynamic_keys FROM api_keys_vault WHERE user_id = ?", (user_id,))
     row = c.fetchone()
     
     # If col_name isn't one of the standard schema strings, serialize it into dynamic_keys
@@ -469,20 +469,20 @@ def set_key_local(user_id: str, col_name: str, key: str):
     
     if row:
         if col_name in standard_cols:
-            c.execute(f"UPDATE vault SET {col_name} = ? WHERE user_id = ?", (key, user_id))
+            c.execute(f"UPDATE api_keys_vault SET {col_name} = ? WHERE user_id = ?", (key, user_id))
         else:
             dyn = json.loads(row["dynamic_keys"] or "{}")
             if key:
                 dyn[col_name] = key
             elif col_name in dyn:
                 del dyn[col_name]
-            c.execute("UPDATE vault SET dynamic_keys = ? WHERE user_id = ?", (json.dumps(dyn), user_id))
+            c.execute("UPDATE api_keys_vault SET dynamic_keys = ? WHERE user_id = ?", (json.dumps(dyn), user_id))
     else:
         if col_name in standard_cols:
-            c.execute(f"INSERT INTO vault (user_id, {col_name}) VALUES (?, ?)", (user_id, key))
+            c.execute(f"INSERT INTO api_keys_vault (user_id, {col_name}) VALUES (?, ?)", (user_id, key))
         else:
             dyn = {col_name: key} if key else {}
-            c.execute("INSERT INTO vault (user_id, dynamic_keys) VALUES (?, ?)", (user_id, json.dumps(dyn)))
+            c.execute("INSERT INTO api_keys_vault (user_id, dynamic_keys) VALUES (?, ?)", (user_id, json.dumps(dyn)))
             
     conn.commit()
     conn.close()
@@ -493,19 +493,20 @@ def get_key_local(user_id: str, col_name: str) -> str:
     standard_cols = ["openai_key", "anthropic_key", "nvidia_key", "google_key", "deepseek_key"]
     
     if col_name in standard_cols:
-        c.execute(f"SELECT {col_name} FROM vault WHERE user_id = ?", (user_id,))
+        c.execute(f"SELECT {col_name} FROM api_keys_vault WHERE user_id = ?", (user_id,))
         row = c.fetchone()
         conn.close()
         if row and row[col_name]:
             return row[col_name]
     else:
-        c.execute("SELECT dynamic_keys FROM vault WHERE user_id = ?", (user_id,))
+        c.execute("SELECT dynamic_keys FROM api_keys_vault WHERE user_id = ?", (user_id,))
         row = c.fetchone()
         conn.close()
         if row and row["dynamic_keys"]:
             try:
                 dyn = json.loads(row["dynamic_keys"])
-                return dyn.get(col_name, "")
+                val = dyn.get(col_name, "")
+                return val
             except:
                 pass
     return ""
@@ -513,7 +514,7 @@ def get_key_local(user_id: str, col_name: str) -> str:
 def get_all_keys_local(user_id: str) -> dict:
     conn = _get_connection()
     c = conn.cursor()
-    c.execute("SELECT * FROM vault WHERE user_id = ?", (user_id,))
+    c.execute("SELECT * FROM api_keys_vault WHERE user_id = ?", (user_id,))
     row = c.fetchone()
     conn.close()
     

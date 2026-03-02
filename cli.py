@@ -147,7 +147,7 @@ def flow_create(prompt: str):
 @flow_app.command("list")
 def flow_list():
     """List all saved flows."""
-    from core.local_db import local_db
+    from core import local_db
     from auth.supabase_client import get_current_user
     user = get_current_user()
     ws_id = local_db.get_or_create_workspace(user["id"] if user else "local_user")
@@ -162,8 +162,8 @@ def flow_list():
 @flow_app.command("run")
 def flow_run(flow_id: str):
     """Execute a built flow by its ID."""
-    from core.orchestrator import run_flow
-    from core.local_db import local_db
+    from core.flow_engine import run_flow
+    from core import local_db
     flow = local_db.get_flow(flow_id)
     if not flow:
         print(f"[red]Flow {flow_id} not found.[/red]")
