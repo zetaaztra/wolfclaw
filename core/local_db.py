@@ -295,6 +295,14 @@ def get_user(email: str) -> Optional[Dict]:
     """Alias for get_user_by_email to match API expectations."""
     return get_user_by_email(email)
 
+def get_user_by_id(user_id: str) -> Optional[Dict]:
+    conn = _get_connection()
+    c = conn.cursor()
+    c.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    row = c.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
 def update_user_password(user_id: str, new_password_hash: str):
     conn = _get_connection()
     c = conn.cursor()

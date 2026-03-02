@@ -20,9 +20,54 @@ from core.tunnels import tunnel
 from core.sync import memory_sync
 import pandas as pd
 
+# ─────────────────────────── STYLING ───────────────────────────
+
+def apply_custom_style():
+    """Inject premium CSS to hide Streamlit branding and polish alignments."""
+    st.markdown("""
+        <style>
+            /* Hide Streamlit branding for Production Grade feel */
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            
+            /* Remove top padding */
+            .block-container {
+                padding-top: 1rem;
+                padding-bottom: 0rem;
+            }
+            
+            /* High-tech glow for sidebar */
+            [data-testid="stSidebar"] {
+                background-color: #0e1117;
+                border-right: 1px solid #1f2937;
+            }
+            
+            /* Premium button styling */
+            .stButton>button {
+                border-radius: 8px;
+                border: 1px solid #374151;
+                transition: all 0.3s ease;
+            }
+            .stButton>button:hover {
+                border-color: #3b82f6;
+                box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+            }
+            
+            /* Chat message alignment */
+            .stChatMessage {
+                background-color: #1a1c24;
+                border-radius: 12px;
+                margin-bottom: 10px;
+                border: 1px solid #2d2f39;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
 # ─────────────────────────── LOGIN ───────────────────────────
 
 def login_view():
+    apply_custom_style()
     st.title("Wolfclaw Login")
     st.info(
         "**Welcome to Wolfclaw!**\n\n"
@@ -933,24 +978,41 @@ def marketplace_view():
     
     with tab1:
         st.subheader("Available Plugins")
+        
+        # Filtering UI
+        f_col1, f_col2 = st.columns(2)
+        with f_col1:
+            tier_filter = st.selectbox("Tier", ["All"] + list(range(11)), help="0:Everyday, 1:Business... 10:Student")
+        with f_col2:
+            search_query = st.text_input("🔍 Search", placeholder="e.g. docker, aws, data")
+            
         try:
             from api.routes.marketplace import MOCK_STORE
             plugins = MOCK_STORE
+            
+            # Apply Filters
+            if tier_filter != "All":
+                plugins = [p for p in plugins if p.get("tier") == tier_filter]
+            if search_query:
+                q = search_query.lower()
+                plugins = [p for p in plugins if q in p["name"].lower() or q in p["description"].lower()]
+                
         except ImportError:
             plugins = []
             
         if not plugins:
-            st.write("No plugins found in registry.")
+            st.write("No plugins found matching your filters.")
         else:
             for p in plugins:
-                st.write(f"**{p['name']}** by {p['author']}")
-                st.write(p['description'])
-                if st.button("Install", key=f"inst_{p['id']}"):
-                    if plugin_manager.install_plugin(p['id']):
-                        st.success(f"Installed {p['id']}!")
-                        st.rerun()
-                    else:
-                        st.error("Install failed.")
+                with st.expander(f"**{p['name']}** — {p.get('persona', 'Plugin')}"):
+                    st.write(p['description'])
+                    st.caption(f"Author: {p.get('author', 'Wolfclaw')} | Downloads: {p.get('downloads', 0)}")
+                    if st.button("Install", key=f"inst_{p['id']}"):
+                        if plugin_manager.install_plugin(p['id']):
+                            st.success(f"Installed {p['id']}!")
+                            st.rerun()
+                        else:
+                            st.error("Install failed.")
                 st.divider()
 
     with tab2:
@@ -1112,6 +1174,7 @@ def webhooks_view():
 # ─────────────────────────── DASHBOARD ───────────────────────────
 
 def dashboard_view():
+    apply_custom_style()
     st.sidebar.title("Wolfclaw")
     st.sidebar.caption("Your personal AI command center")
     

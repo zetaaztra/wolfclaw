@@ -1,86 +1,46 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 import os
 from pathlib import Path
 from core.plugins.plugin_manager import PLUGINS_DIR, plugin_manager
+from data.plugin_catalog import PLUGIN_CATALOG
 
 router = APIRouter()
 
-MOCK_STORE = [
-    {
-        "id": "salesforce_connector",
-        "name": "Salesforce Query",
-        "description": "Custom query runner for Salesforce CRM.",
-        "author": "Community",
-        "downloads": 1240,
-        "code": """
-PLUGIN_TOOL_SCHEMAS = [
-    {
-        "type": "function",
-        "function": {
-            "name": "salesforce_query",
-            "description": "Run a SOQL query against Salesforce.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "The SOQL query string"}
-                },
-                "required": ["query"]
-            }
-        }
-    }
-]
-
-def execute_plugin_tool(name, kwargs):
-    if name == "salesforce_query":
-        return f"Mock Salesforce Result for query: {kwargs.get('query')}"
-    return None
-"""
-    },
-    {
-        "id": "math_calculator",
-        "name": "Advanced Calculator",
-        "description": "Perform complex mathematical operations.",
-        "author": "Wolfclaw Team",
-        "downloads": 5400,
-        "code": """
-import math
-
-PLUGIN_TOOL_SCHEMAS = [
-    {
-        "type": "function",
-        "function": {
-            "name": "calculate_math",
-            "description": "Evaluate a mathematical expression. ONLY math functions allowd (e.g. math.sin(x), math.sqrt(y)).",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "expression": {"type": "string", "description": "Math expression string"}
-                },
-                "required": ["expression"]
-            }
-        }
-    }
-]
-
-def execute_plugin_tool(name, kwargs):
-    if name == "calculate_math":
-        try:
-            allowed_names = {k: v for k, v in math.__dict__.items() if not k.startswith("__")}
-            result = eval(kwargs.get("expression", ""), {"__builtins__": {}}, allowed_names)
-            return str(result)
-        except Exception as e:
-            return f"Math parsing error: {str(e)}"
-    return None
-"""
-    }
-]
+# The full catalog (90 plugins across 11 personas)
+MOCK_STORE = PLUGIN_CATALOG
 
 @router.get("/plugins")
-async def list_store_plugins():
+async def list_store_plugins(
+    tier: int = Query(None, description="Filter by tier (0-10)"),
+    persona: str = Query(None, description="Filter by persona"),
+    search: str = Query(None, description="Search by name or description")
+):
+    plugins = MOCK_STORE
+    if tier is not None:
+        plugins = [p for p in plugins if p.get("tier") == tier]
+    if persona:
+        plugins = [p for p in plugins if persona.lower() in p.get("persona", "").lower()]
+    if search:
+        q = search.lower()
+        plugins = [p for p in plugins if q in p["name"].lower() or q in p["description"].lower()]
     return {"plugins": [
-        {"id": p["id"], "name": p["name"], "description": p["description"], "author": p["author"], "downloads": p["downloads"]}
-        for p in MOCK_STORE
-    ]}
+        {"id": p["id"], "name": p["name"], "description": p["description"],
+         "author": p.get("author", "Community"), "downloads": p.get("downloads", 0),
+         "tier": p.get("tier", 0), "persona": p.get("persona", "")}
+        for p in plugins
+    ], "total": len(plugins)}
+
+@router.get("/tiers")
+async def list_tiers():
+    """Return available tiers and plugin counts."""
+    tiers = {}
+    for p in MOCK_STORE:
+        t = p.get("tier", 0)
+        persona = p.get("persona", "Unknown")
+        if t not in tiers:
+            tiers[t] = {"tier": t, "persona": persona, "count": 0}
+        tiers[t]["count"] += 1
+    return {"tiers": list(tiers.values())}
 
 @router.get("/installed")
 async def list_installed_plugins():
@@ -119,3 +79,4 @@ async def uninstall_plugin(plugin_id: str):
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
     raise HTTPException(status_code=404, detail="Plugin not installed.")
+

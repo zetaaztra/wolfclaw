@@ -24,12 +24,24 @@ def login_user(email, password):
         pwd_hash = hashlib.sha256(password.encode()).hexdigest()
         
         if user and user["password_hash"] == pwd_hash:
-            # Mock a user object structure expected by views.py
-            class DummyUser: id = user["id"]
-            class DummySession: access_token = "local_token"
+            # Create a persistent session in local_db
+            session_id = local_db.create_session(user["id"])
             
-            st.session_state["user"] = DummyUser()
-            st.session_state["session"] = DummySession()
+            # Mock a user object structure expected by views.py
+            class DummyUser: id = user["id"]; email = user["email"]
+            class DummySession: access_token = session_id
+            
+            u = DummyUser()
+            s = DummySession()
+            
+            # Update Streamlit state if available
+            try:
+                import streamlit as st
+                st.session_state["user"] = u
+                st.session_state["session"] = s
+            except:
+                pass
+                
             return True, None
         return False, "Invalid credentials"
 
@@ -37,8 +49,12 @@ def login_user(email, password):
     try:
         response = client.auth.sign_in_with_password({"email": email, "password": password})
         if response.user:
-            st.session_state["user"] = response.user
-            st.session_state["session"] = response.session
+            try:
+                import streamlit as st
+                st.session_state["user"] = response.user
+                st.session_state["session"] = response.session
+            except:
+                pass
             return True, None
     except Exception as e:
         return False, str(e)
@@ -67,6 +83,15 @@ def signup_user(email, password):
     return False, "Unknown error"
 
 def logout_user():
+    # Clear local persistent session first
+    if os.environ.get("WOLFCLAW_ENVIRONMENT") == "desktop":
+        from core import local_db
+        # We don't have the session_id easily here, so we clear all for this env/user or most recent
+        conn = local_db._get_connection()
+        conn.execute("DELETE FROM sessions") # Brutal logout for local
+        conn.commit()
+        conn.close()
+
     if os.environ.get("WOLFCLAW_ENVIRONMENT") != "desktop":
         client = get_supabase_client()
         try:
@@ -74,11 +99,43 @@ def logout_user():
         except:
             pass
             
-    st.session_state["user"] = None
-    st.session_state["session"] = None
+    try:
+        import streamlit as st
+        st.session_state["user"] = None
+        st.session_state["session"] = None
+    except:
+        pass
 
 def get_current_user():
-    return st.session_state.get("user")
+    # 1. Try Streamlit session state first
+    try:
+        import streamlit as st
+        user = st.session_state.get("user")
+        if user: return user
+    except:
+        pass
+        
+    # 2. If no memory state, check persistent local_db session (Fleet Sync)
+    if os.environ.get("WOLFCLAW_ENVIRONMENT") == "desktop":
+        from core import local_db
+        conn = local_db._get_connection()
+        row = conn.execute("SELECT user_id FROM sessions ORDER BY created_at DESC LIMIT 1").fetchone()
+        conn.close()
+        
+        if row:
+            # Reconstruct the user object
+            user_data = local_db.get_user_by_id(row["user_id"])
+            if user_data:
+                class DummyUser: id = user_data["id"]; email = user_data["email"]
+                u = DummyUser()
+                # Feed it back to Streamlit if we are in it
+                try:
+                    import streamlit as st
+                    st.session_state["user"] = u
+                except:
+                    pass
+                return u
+    return None
 
 def delete_account():
     """Wipes the user's data from Supabase public schemas. 

@@ -86,6 +86,15 @@ def main():
     base_dir = get_base_dir()
     os.environ["WOLFCLAW_ENVIRONMENT"] = "desktop"
     
+    # Ensure database is initialized before anything else starts
+    try:
+        sys.path.insert(0, base_dir)
+        from core.local_db import init_db
+        init_db()
+        logger.info("Local database initialized/verified.")
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}")
+
     sys.path.insert(0, base_dir)
     if "PYTHONPATH" in os.environ:
         os.environ["PYTHONPATH"] = f"{base_dir}{os.pathsep}{os.environ['PYTHONPATH']}"
