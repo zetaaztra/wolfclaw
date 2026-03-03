@@ -181,13 +181,13 @@ async def send_warroom_message(req: WarRoomRequest):
 
 
 @router.get("/bots")
-async def list_chat_bots():
+async def list_chat_bots(user: dict = Depends(get_current_user)):
     """List bots available for chatting"""
     if os.environ.get("WOLFCLAW_ENVIRONMENT") != "desktop":
         raise HTTPException(status_code=403, detail="Route restricted to Desktop environment.")
     
     try:
-        bots = bot_manager.get_bots()
+        bots = bot_manager.get_bots(user_id=user["id"])
         bot_list = []
         for b_id, b_data in bots.items():
             bot_list.append({

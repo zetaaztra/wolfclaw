@@ -9,8 +9,9 @@ DB_PATH = os.path.join(os.path.expanduser("~"), ".wolfclaw", "wolfclaw_local.db"
 
 def _get_connection():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
     return conn
 
 def init_db():
@@ -456,16 +457,30 @@ def delete_bot(bot_id: str):
     c = conn.cursor()
     c.execute("PRAGMA foreign_keys = ON")
     
-    # 1. Delete associated data from tables that might not have CASCADE or FKs
-    c.execute("DELETE FROM chat_history WHERE bot_id = ?", (bot_id,))
+    # 1. Delete associated data (safe — ignore if tables/columns don't exist)
+    try:
+        c.execute("DELETE FROM chat_history WHERE bot_id = ?", (bot_id,))
+    except Exception:
+        pass
     
-    # Delete task results first as they reference scheduled_tasks
-    c.execute("DELETE FROM task_results WHERE task_id IN (SELECT id FROM scheduled_tasks WHERE bot_id = ?)", (bot_id,))
-    c.execute("DELETE FROM scheduled_tasks WHERE bot_id = ?", (bot_id,))
+    try:
+        c.execute("DELETE FROM task_results WHERE task_id IN (SELECT id FROM scheduled_tasks WHERE action_id = ?)", (bot_id,))
+        c.execute("DELETE FROM scheduled_tasks WHERE action_id = ?", (bot_id,))
+    except Exception:
+        pass
     
-    c.execute("DELETE FROM usage_logs WHERE bot_id = ?", (bot_id,))
+    try:
+        c.execute("DELETE FROM usage_logs WHERE bot_id = ?", (bot_id,))
+    except Exception:
+        pass
     
-    # 2. Delete the bot itself (will cascade to knowledge_docs and knowledge_chunks)
+    try:
+        c.execute("DELETE FROM knowledge_chunks WHERE bot_id = ?", (bot_id,))
+        c.execute("DELETE FROM knowledge_docs WHERE bot_id = ?", (bot_id,))
+    except Exception:
+        pass
+    
+    # 2. Delete the bot itself
     c.execute("DELETE FROM bots WHERE id = ?", (bot_id,))
     
     conn.commit()

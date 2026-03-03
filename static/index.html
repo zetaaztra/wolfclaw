@@ -1310,181 +1310,463 @@
                     </div>
                 </div>
 
-                <!-- Help & Guide View -->
                 <div id="view-help" class="view-panel hidden">
                     <div class="help-hero"
-                        style="background: linear-gradient(135deg, var(--accent-light), var(--bg-card)); padding: 40px; border-radius: 12px; margin-bottom: 30px; border: 1px solid var(--border-color);">
-                        <h1 style="margin:0; font-size: 2.5em;"><i class="fa-solid fa-raindrops"></i> Welcome to
-                            Wolfclaw</h1>
-                        <p style="font-size: 1.1em; color: var(--text-muted); margin-top: 10px; max-width: 800px;">
-                            Wolfclaw is your personal AI assistant team. It runs entirely on your computer, meaning your
-                            data stays completely private. Think of it as having real helpers who can chat, search, and
-                            manage your tasks without sending your personal information over the internet.
+                        style="background: linear-gradient(135deg, #1a1a2e, #16213e); padding: 50px; border-radius: 16px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden;">
+                        <div
+                            style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: var(--primary-color); filter: blur(100px); opacity: 0.2; border-radius: 50%;">
+                        </div>
+                        <h1 style="margin:0; font-size: 3em; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.3);"><i
+                                class="fa-solid fa-scroll"></i> The Wolfclaw Codex</h1>
+                        <p
+                            style="font-size: 1.25em; color: #a2aab7; margin-top: 15px; max-width: 850px; line-height: 1.6;">
+                            Master the art of AI orchestration. This encyclopedic guide covers the entire Model Pantheon
+                            and provides step-by-step logic for your fleet operations.
                         </p>
                     </div>
 
                     <div class="card-grid">
-                        <!-- Navigation Essence -->
-                        <div class="card" style="grid-column: span 2;">
-                            <h3 style="color: var(--accent-color);"><i class="fa-solid fa-compass"></i> Let's Get
-                                Started</h3>
-                            <div
-                                style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 15px;">
-                                <div>
-                                    <h4 style="margin-bottom:8px;">1. Pick an AI Role</h4>
-                                    <p style="font-size:0.85em; color:var(--text-muted);">Go to <strong>AI
-                                            Roles</strong>.
-                                        You can pick an AI that is best for coding, another for writing emails, or just
-                                        a friendly chat companion.</p>
-                                </div>
-                                <div>
-                                    <h4 style="margin-bottom:8px;">2. Add Abilities</h4>
-                                    <p style="font-size:0.85em; color:var(--text-muted);">Use the <strong>Plugin
-                                            Store</strong> to give your AI extra abilities, such as searching the
-                                        internet or reading files.</p>
-                                </div>
-                                <div>
-                                    <h4 style="margin-bottom:8px;">3. Start Chatting</h4>
-                                    <p style="font-size:0.85em; color:var(--text-muted);">Go back to the
-                                        <strong>Chat</strong> screen and say hello! You can ask it to help you write,
-                                        research, or brainstorm ideas.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- NVIDIA NIM BIBLE -->
-                        <div class="card" style="grid-column: span 3; border-top: 4px solid #76b900;">
-                            <h3 style="display:flex; align-items:center; gap:10px;">
-                                <img src="https://www.nvidia.com/content/dam/en-zz/Solutions/about-nvidia/logo-and-brand/02-nvidia-logo-color-grn-500x200-d.png"
-                                    alt="Nvidia" style="height:20px;">
-                                The Nvidia NIM Bible
-                            </h3>
-                            <p style="font-size:0.9em; color:var(--text-muted); margin-bottom:20px;">Use Nvidia NIM for
-                                high-performance open models. Here is how to choose your weapon:</p>
-
-                            <table class="table" style="width:100%; border-collapse: collapse; font-size: 0.85em;">
-                                <thead style="background: rgba(118, 185, 0, 0.1);">
-                                    <tr>
-                                        <th style="text-align:left; padding:12px; border-bottom: 2px solid #76b900;">
-                                            Model Name</th>
-                                        <th style="text-align:left; padding:12px; border-bottom: 2px solid #76b900;">
-                                            Best For...</th>
-                                        <th style="text-align:left; padding:12px; border-bottom: 2px solid #76b900;">The
-                                            "Wolf" Vibe</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td style="padding:10px; border-bottom: 1px solid var(--border-color);">
-                                            <code>meta/llama-3.1-405b</code>
-                                        </td>
-                                        <td style="padding:10px; border-bottom: 1px solid var(--border-color);">Extreme
-                                            reasoning, complex logic, scientific analysis.</td>
-                                        <td style="padding:10px; border-bottom: 1px solid var(--border-color);">The
-                                            <strong>Alpha Legend</strong>. Slow but omniscient.
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding:10px; border-bottom: 1px solid var(--border-color);">
-                                            <code>nvidia/llama-3.1-70b-instruct</code>
-                                        </td>
-                                        <td style="padding:10px; border-bottom: 1px solid var(--border-color);">Daily
-                                            tasks, high-speed orchestration, chat.</td>
-                                        <td style="padding:10px; border-bottom: 1px solid var(--border-color);">The
-                                            <strong>Reliable Beta</strong>. Fast, smart, and efficient.
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding:10px; border-bottom: 1px solid var(--border-color);">
-                                            <code>nvidia/nemotron-4-340b-instruct</code>
-                                        </td>
-                                        <td style="padding:10px; border-bottom: 1px solid var(--border-color);">
-                                            Synthetic data generation, roleplay, nuanced instruction following.</td>
-                                        <td style="padding:10px; border-bottom: 1px solid var(--border-color);">The
-                                            <strong>Shadow Stalker</strong>. Deeply obedient and detailed.
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding:10px; border-bottom: 1px solid var(--border-color);">
-                                            <code>mistralai/mistral-large-2-instruct</code>
-                                        </td>
-                                        <td style="padding:10px; border-bottom: 1px solid var(--border-color);">
-                                            Multilingual support, creative writing, unique European logic.</td>
-                                        <td style="padding:10px; border-bottom: 1px solid var(--border-color);">The
-                                            <strong>Outsider Rogue</strong>. Precise and linguistically gifted.
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div
-                                style="margin-top:15px; background: rgba(118, 185, 0, 0.05); padding: 10px; border-radius: 8px; font-size: 0.8em; color: #5a8d00;">
-                                <i class="fa-solid fa-lightbulb"></i> <strong>Pro Tip:</strong> Nvidia NIM models often
-                                provide free credits for trial users. Check your Nvidia Build dashboard!
-                            </div>
-                        </div>
-
-                        <!-- Simple ELI5 Guide -->
+                        <!-- 1. THE MODEL PANTHEON -->
                         <div class="card"
-                            style="grid-column: span 3; background: var(--bg-secondary); border: 1px dashed var(--accent-light);">
-                            <h3 style="color: var(--accent-color);"><i class="fa-solid fa-child-reaching"></i> Wolfclaw
-                                ELI5 (Explain Like I'm Five)</h3>
-                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
-                                <div>
-                                    <h4 style="margin-bottom:5px;">🏠 How to start?</h4>
-                                    <p style="font-size:0.85em; color:var(--text-muted);">Run
-                                        <code>desktop_launcher.py</code>. This dashboard is your AI Command Center.
-                                    </p>
+                            style="grid-column: 1 / -1; border-top: 4px solid var(--primary-color); background: var(--card-bg);">
+                            <h2 style="display:flex; align-items:center; gap:12px; margin-bottom: 20px;">
+                                <i class="fa-solid fa-brain" style="color: var(--primary-color);"></i>
+                                The Model Pantheon: Your Fleet's Intelligence
+                            </h2>
+                            <p style="color: var(--text-muted); margin-bottom: 25px;">Wolfclaw integrates the most
+                                powerful models from the Nvidia NIM ecosystem alongside OpenAI, Anthropic, and Local AI.
+                                Choose your intelligence wisely.</p>
 
-                                    <h4 style="margin-bottom:5px; margin-top:15px;">🤖 Making a Bot Friend</h4>
-                                    <p style="font-size:0.85em; color:var(--text-muted);">Go to <strong>Manage
-                                            Bots</strong> → <strong>Create New</strong>. Give them a name and tell them
-                                        how to act!</p>
-                                </div>
-                                <div>
-                                    <h4 style="margin-bottom:5px;">💬 Talking & Superpowers</h4>
-                                    <p style="font-size:0.85em; color:var(--text-muted);">Use <strong>Chat</strong> to
-                                        talk. AI can see your screen or type for you if you ask!</p>
-
-                                    <h4 style="margin-bottom:5px; margin-top:15px;">🌐 Remote Servers</h4>
-                                    <p style="font-size:0.85em; color:var(--text-muted);">Use <strong>Remote
-                                            Servers</strong> to connect to computers far away. Your bots can do work
-                                        there too.</p>
+                            <!-- Category: Heavy Reasoners -->
+                            <div style="margin-bottom: 40px;">
+                                <h3
+                                    style="color: #fff; margin-bottom: 15px; border-left: 3px solid #76b900; padding-left: 10px;">
+                                    The Heavy Reasoners <small style="font-size: 0.6em; color: var(--text-muted);">(Deep
+                                        Logic & Strategy)</small></h3>
+                                <div
+                                    style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color);">
+                                    <table class="table"
+                                        style="width:100%; border-collapse: collapse; background: rgba(0,0,0,0.1);">
+                                        <thead>
+                                            <tr style="background: rgba(118, 185, 0, 0.1);">
+                                                <th
+                                                    style="text-align:left; padding:12px; border-bottom: 2px solid var(--border-color);">
+                                                    Model</th>
+                                                <th
+                                                    style="text-align:left; padding:12px; border-bottom: 2px solid var(--border-color);">
+                                                    Best Case</th>
+                                                <th
+                                                    style="text-align:left; padding:12px; border-bottom: 2px solid var(--border-color);">
+                                                    The Vibe</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><code>meta/llama-3.1-405b</code></td>
+                                                <td>Scientific research, extreme logic, synthetic data.</td>
+                                                <td>The <strong>Archon</strong>. All-knowing and massive.</td>
+                                            </tr>
+                                            <tr>
+                                                <td><code>deepseek-ai/deepseek-v3</code></td>
+                                                <td>Hard reasoning, complex math, state-of-the-art logic.</td>
+                                                <td>The <strong>Philosopher</strong>. Intense and precise.</td>
+                                            </tr>
+                                            <tr>
+                                                <td><code>anthropic/claude-3-5-sonnet</code></td>
+                                                <td>Nuanced writing, large context analysis, human-like chat.</td>
+                                                <td>The <strong>Scribe</strong>. Elegant and highly articulate.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
+
+                            <!-- Category: Vision & Multimodal -->
+                            <div style="margin-bottom: 40px;">
+                                <h3
+                                    style="color: #fff; margin-bottom: 15px; border-left: 3px solid #0088cc; padding-left: 10px;">
+                                    Vision & Multimodal Specialists <small
+                                        style="font-size: 0.6em; color: var(--text-muted);">(Seeing & Moving)</small>
+                                </h3>
+                                <div
+                                    style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color);">
+                                    <table class="table"
+                                        style="width:100%; border-collapse: collapse; background: rgba(0,0,0,0.1);">
+                                        <thead>
+                                            <tr style="background: rgba(0, 136, 204, 0.1);">
+                                                <th
+                                                    style="text-align:left; padding:12px; border-bottom: 2px solid var(--border-color);">
+                                                    Model</th>
+                                                <th
+                                                    style="text-align:left; padding:12px; border-bottom: 2px solid var(--border-color);">
+                                                    Best Case</th>
+                                                <th
+                                                    style="text-align:left; padding:12px; border-bottom: 2px solid var(--border-color);">
+                                                    Capabilities</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><code>nvidia/cosmos-reason2-8b</code></td>
+                                                <td>Physical AI, understanding videos and spatial logic.</td>
+                                                <td><span class="badge" style="background:#333;">VIDEO ODYSSEY</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><code>nvidia/nemotron-nano-12b-vl</code></td>
+                                                <td>Extracting data from images, summarising UI screens.</td>
+                                                <td><span class="badge" style="background:#333;">SUPER OCR</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td><code>google/gemma-3-27b-it</code></td>
+                                                <td>Efficient multimodal reasoning on edge devices.</td>
+                                                <td><span class="badge" style="background:#333;">EDGE VISION</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Category: Agentic Coding -->
+                            <div style="margin-bottom: 40px;">
+                                <h3
+                                    style="color: #fff; margin-bottom: 15px; border-left: 3px solid #ff4757; padding-left: 10px;">
+                                    Agentic Coding & Dev Tools <small
+                                        style="font-size: 0.6em; color: var(--text-muted);">(Building & Fixing)</small>
+                                </h3>
+                                <div
+                                    style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color);">
+                                    <table class="table"
+                                        style="width:100%; border-collapse: collapse; background: rgba(0,0,0,0.1);">
+                                        <thead>
+                                            <tr style="background: rgba(255, 71, 87, 0.1);">
+                                                <th
+                                                    style="text-align:left; padding:12px; border-bottom: 2px solid var(--border-color);">
+                                                    Model</th>
+                                                <th
+                                                    style="text-align:left; padding:12px; border-bottom: 2px solid var(--border-color);">
+                                                    Best Case</th>
+                                                <th
+                                                    style="text-align:left; padding:12px; border-bottom: 2px solid var(--border-color);">
+                                                    Agentic Skill</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><code>qwen/qwen3-coder-480b</code></td>
+                                                <td>Full-stack dev, browser automation, complex debugging.</td>
+                                                <td>The <strong>Master Builder</strong>. Top-tier coding.</td>
+                                            </tr>
+                                            <tr>
+                                                <td><code>mistralai/codestral-22b</code></td>
+                                                <td>Fast Python scripts, Java/JS expert, low latency dev.</td>
+                                                <td>The <strong>Speed Hacker</strong>. Blazing fast.</td>
+                                            </tr>
+                                            <tr>
+                                                <td><code>z-ai/glm-4.7</code></td>
+                                                <td>Multilingual agentic coding partner (strong UI skills).</td>
+                                                <td>The <strong>UI Virtuoso</strong>. Great for web dev.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Category: The Specialized Fleet -->
+                            <div>
+                                <h3
+                                    style="color: #fff; margin-bottom: 15px; border-left: 3px solid #ffa502; padding-left: 10px;">
+                                    The Specialized Fleet <small
+                                        style="font-size: 0.6em; color: var(--text-muted);">(Bio, Physical, and
+                                        Safety)</small></h3>
+                                <div
+                                    style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color);">
+                                    <table class="table"
+                                        style="width:100%; border-collapse: collapse; background: rgba(0,0,0,0.1);">
+                                        <thead>
+                                            <tr style="background: rgba(255, 165, 2, 0.1);">
+                                                <th
+                                                    style="text-align:left; padding:12px; border-bottom: 2px solid var(--border-color);">
+                                                    Model</th>
+                                                <th
+                                                    style="text-align:left; padding:12px; border-bottom: 2px solid var(--border-color);">
+                                                    Domain</th>
+                                                <th
+                                                    style="text-align:left; padding:12px; border-bottom: 2px solid var(--border-color);">
+                                                    Purpose</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><code>openfold/openfold3</code></td>
+                                                <td>Biology</td>
+                                                <td>Predicting molecular 3D structures (Proteins/DNA).</td>
+                                            </tr>
+                                            <tr>
+                                                <td><code>nvidia/cosmos-transfer</code></td>
+                                                <td>Robotics</td>
+                                                <td>Generating physics-aware video world states.</td>
+                                            </tr>
+                                            <tr>
+                                                <td><code>nvidia/llama-3.1-safety-guard</code></td>
+                                                <td>Safety</td>
+                                                <td>Advanced content moderation and policy enforcement.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. FLEET GUIDES (STEP BY STEP) -->
+                        <div class="card" style="grid-column: 1 / -1; border-top: 4px solid var(--success-color);">
+                            <h2 style="display:flex; align-items:center; gap:12px; margin-bottom: 25px;">
+                                <i class="fa-solid fa-list-check" style="color: var(--success-color);"></i>
+                                Fleet Deployment: A to Z Guide
+                            </h2>
+
                             <div
-                                style="margin-top:20px; padding:12px; background:rgba(255,165,0,0.1); border-radius:8px; border:1px solid rgba(255,165,0,0.3);">
-                                <p style="font-size:0.85em; color:orange;"><i
-                                        class="fa-solid fa-triangle-exclamation"></i> <strong>Note on Flow
-                                        Templates:</strong> We've heard you! If flow templates weren't working, please
-                                    ensure you are logged in. The latest security update fixed an issue with template
-                                    importing.</p>
+                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px;">
+                                <!-- Creating Bots -->
+                                <div class="step-guide">
+                                    <h3 style="color: var(--primary-color);"><i class="fa-solid fa-plus-circle"></i> 1.
+                                        Birth of a Bot</h3>
+                                    <p style="font-size: 14px; margin-top:10px;">Create a personalized AI assistant with
+                                        specific goals.</p>
+                                    <ul
+                                        style="padding-left: 20px; font-size: 13px; line-height: 1.8; margin-top: 10px; color: var(--text-muted);">
+                                        <li>Navigate to <strong>Manage Bots</strong> in the sidebar.</li>
+                                        <li>Click <strong>New Bot</strong>. Give it a Name and choose a Model.</li>
+                                        <li>Define its <strong>System Prompt</strong>: e.g., "You are a professional
+                                            accountant who likes emojis."</li>
+                                        <li>Hit <strong>Deploy</strong> and start chatting!</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Telegram Bot Control -->
+                                <div class="step-guide">
+                                    <h3 style="color: var(--secondary-color);"><i class="fa-brands fa-telegram"></i> 2.
+                                        Remote Control (Telegram)</h3>
+                                    <p style="font-size: 14px; margin-top:10px;">Control your bot army from your phone
+                                        anywhere in the world.</p>
+                                    <ul
+                                        style="padding-left: 20px; font-size: 13px; line-height: 1.8; margin-top: 10px; color: var(--text-muted);">
+                                        <li>Chat with <strong>@BotFather</strong> on Telegram to get a
+                                            <strong>Token</strong>.
+                                        </li>
+                                        <li>Go to <strong>Deploy Channels</strong> → <strong>Telegram Setup</strong>.
+                                        </li>
+                                        <li>Select your Bot and paste the Token.</li>
+                                        <li>Start the <strong>Worker</strong> and send a message to your bot on
+                                            Telegram!</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Template Bots -->
+                                <div class="step-guide">
+                                    <h3 style="color: var(--warning-color);"><i class="fa-solid fa-masks-theater"></i>
+                                        3. Using AI Roles? (Templates)</h3>
+                                    <p style="font-size: 14px; margin-top:10px;">Don't start from scratch—use our
+                                        gallery of 50+ pre-built roles.</p>
+                                    <ul
+                                        style="padding-left: 20px; font-size: 13px; line-height: 1.8; margin-top: 10px; color: var(--text-muted);">
+                                        <li>Visit the <strong>Template Gallery</strong>.</li>
+                                        <li>Browse categories: Business, Legal, Coding, Health, etc.</li>
+                                        <li>Click <strong>Clone Role</strong> to instantly create a bot with that expert
+                                            level prompt.</li>
+                                    </ul>
+                                </div>
+
+                                <!-- War Room -->
+                                <div class="step-guide">
+                                    <h3 style="color: #ff4757;"><i class="fa-solid fa-shield-halved"></i> 4. The War
+                                        Room (Swarm)</h3>
+                                    <p style="font-size: 14px; margin-top:10px;">Orchestrate multiple agents to solve
+                                        one massive problem.</p>
+                                    <ul
+                                        style="padding-left: 20px; font-size: 13px; line-height: 1.8; margin-top: 10px; color: var(--text-muted);">
+                                        <li>Enter the <strong>War Room</strong> section.</li>
+                                        <li>Pick a <strong>Manager Bot</strong> (Choose a smart model like Claude 3.5 or
+                                            Llama 405b).</li>
+                                        <li>Checkmark multiple <strong>Sub-Bots</strong> (Specialists).</li>
+                                        <li>Submit a task like "Analyze this business idea" and watch the bots
+                                            collaborate!</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Flows & Plugins -->
+                                <div class="step-guide">
+                                    <h3 style="color: #5352ed;"><i class="fa-solid fa-diagram-next"></i> 5. Flows &
+                                        Visual Plugins</h3>
+                                    <p style="font-size: 14px; margin-top:10px;">Dynamic workflows that connect the
+                                        internet and your PC.</p>
+                                    <ul
+                                        style="padding-left: 20px; font-size: 13px; line-height: 1.8; margin-top: 10px; color: var(--text-muted);">
+                                        <li>Open <strong>Flow Studio</strong> to see the visual canvas.</li>
+                                        <li>Use <strong>Flow Templates</strong> to import common automations (Scraping,
+                                            Emailing, Searching).</li>
+                                        <li>Plugins allow bots to "Search Google" or "Read a Website" seamlessly.</li>
+                                        <li>Connect blocks to build the perfect logic chain.</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Macros -->
+                                <div class="step-guide">
+                                    <h3 style="color: #2ed573;"><i class="fa-solid fa-eye"></i> 6. Watch & Learn
+                                        (Macros)</h3>
+                                    <p style="font-size: 14px; margin-top:10px;">Teach your AI to use your computer by
+                                        just watching you.</p>
+                                    <ul
+                                        style="padding-left: 20px; font-size: 13px; line-height: 1.8; margin-top: 10px; color: var(--text-muted);">
+                                        <li>Go to <strong>Automation Studio</strong> → <strong>Record Macro</strong>.
+                                        </li>
+                                        <li>Perform your mouse and keyboard actions.</li>
+                                        <li>Click <strong>Analyze with Claude/Nvidia</strong>.</li>
+                                        <li>Wolfclaw will turn your recording into a <strong>Perfect Flow</strong> that
+                                            can repeat the task forever.</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Knowledge Base -->
+                                <div class="step-guide">
+                                    <h3 style="color: #ffa502;"><i class="fa-solid fa-book-open"></i> 7. The Knowledge
+                                        Base (RAG)</h3>
+                                    <p style="font-size: 14px; margin-top:10px;">Teach your bots using your own
+                                        documents, PDFs, or websites.</p>
+                                    <ul
+                                        style="padding-left: 20px; font-size: 13px; line-height: 1.8; margin-top: 10px; color: var(--text-muted);">
+                                        <li>Go to <strong>Knowledge Base</strong> and click <strong>Add
+                                                Collection</strong>.</li>
+                                        <li>Upload files (PDF, TXT, DOCX) or provide a Website URL for scraping.</li>
+                                        <li>Wait for the <strong>Embedding Wolf</strong> to index your data.</li>
+                                        <li>In any Bot's settings, checkmark your Collection to give it instant memory!
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- SSH & Remote -->
+                                <div class="step-guide">
+                                    <h3 style="color: #ff4757;"><i class="fa-solid fa-terminal"></i> 8. Remote Command
+                                        (SSH)</h3>
+                                    <p style="font-size: 14px; margin-top:10px;">Bridge your AI directly into your
+                                        remote servers or VPS.</p>
+                                    <ul
+                                        style="padding-left: 20px; font-size: 13px; line-height: 1.8; margin-top: 10px; color: var(--text-muted);">
+                                        <li>Navigate to <strong>Remote Servers</strong> and click <strong>Add
+                                                Server</strong>.</li>
+                                        <li>Enter your IP, Port, and SSH Credentials (saved in Secrets Vault).</li>
+                                        <li>Use the <strong>SSH Plugin</strong> in any Flow or Bot.</li>
+                                        <li>Deploy your bot to Telegram to control your servers via chat!</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Integrations -->
+                                <div class="step-guide">
+                                    <h3 style="color: #0088cc;"><i class="fa-solid fa-plug"></i> 9. Universal
+                                        Integrations</h3>
+                                    <p style="font-size: 14px; margin-top:10px;">Connect Wolfclaw to the world's most
+                                        popular apps.</p>
+                                    <ul
+                                        style="padding-left: 20px; font-size: 13px; line-height: 1.8; margin-top: 10px; color: var(--text-muted);">
+                                        <li>Open the <strong>Integrations</strong> hub.</li>
+                                        <li>Select your preferred service (Google Docs, Slack, GitHub, etc.).</li>
+                                        <li>Paste your API Keys into the <strong>Secrets Vault</strong>.</li>
+                                        <li>Your bots can now read/write data to these apps automatically!</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Automations -->
+                                <div class="step-guide">
+                                    <h3 style="color: #76b900;"><i class="fa-solid fa-clock"></i> 10. Automation Studio
+                                    </h3>
+                                    <p style="font-size: 14px; margin-top:10px;">Put your entire fleet on a schedule
+                                        with Cron-like precision.</p>
+                                    <ul
+                                        style="padding-left: 20px; font-size: 13px; line-height: 1.8; margin-top: 10px; color: var(--text-muted);">
+                                        <li>Go to <strong>Automations</strong> and click <strong>Schedule New
+                                                Task</strong>.</li>
+                                        <li>Pick a Bot or a Flow to run.</li>
+                                        <li>Set a <strong>Cron Interval</strong> (e.g., "Every Monday at 9 AM").</li>
+                                        <li>Hit <strong>Activate</strong> to let Wolfclaw work while you sleep.</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Secrets Vault -->
+                                <div class="step-guide">
+                                    <h3 style="color: #e056fd;"><i class="fa-solid fa-vault"></i> 11. Secrets Vault
+                                        (Iron Security)</h3>
+                                    <p style="font-size: 14px; margin-top:10px;">The encrypted heart of Wolfclaw.
+                                        Protect your identities.</p>
+                                    <ul
+                                        style="padding-left: 20px; font-size: 13px; line-height: 1.8; margin-top: 10px; color: var(--text-muted);">
+                                        <li>All your API Keys and SSH passwords are encrypted with AES-256 locally.</li>
+                                        <li>Only you hold the **Master Key**. If you lose it, the data is gone forever.
+                                        </li>
+                                        <li>Use the Vault for secure deployments to remote servers and 3rd party APIs.
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- Analytics -->
+                                <div class="step-guide">
+                                    <h3 style="color: #48d1cc;"><i class="fa-solid fa-magnifying-glass-chart"></i> 12.
+                                        Analytics (Watch the Fleet)</h3>
+                                    <p style="font-size: 14px; margin-top:10px;">Monitor CPU usage, token efficiency,
+                                        and response times.</p>
+                                    <ul
+                                        style="padding-left: 20px; font-size: 13px; line-height: 1.8; margin-top: 10px; color: var(--text-muted);">
+                                        <li>Visit <strong>Analytics</strong> to see which bots are the most active and
+                                            efficient.</li>
+                                        <li>Check <strong>Activity Logs</strong> for a step-by-step history of every
+                                            tool and prompt.</li>
+                                        <li>Perfect for identifying and squashing logic bugs in your multi-agent flows.
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- Wallet & Management -->
+                                <div class="step-guide">
+                                    <h3 style="color: #ff9f43;"><i class="fa-solid fa-piggy-bank"></i> 13. Wallet &
+                                        Logistics</h3>
+                                    <p style="font-size: 14px; margin-top:10px;">Keeping the mission sustainable and
+                                        within budget.</p>
+                                    <ul
+                                        style="padding-left: 20px; font-size: 13px; line-height: 1.8; margin-top: 10px; color: var(--text-muted);">
+                                        <li>Monitor your **Nvidia NIM Credits** and API costs in real-time in the
+                                            Wallet.</li>
+                                        <li>Use **Settings** to toggle **🧒 Simple Mode (ELI5)** for clearer answers.
+                                        </li>
+                                        <li>Keep your fleet lean and powerful by decommissioning old workers.</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
 
-
-                        <!-- Visual Flows Deep Dive -->
-                        <div class="card">
-                            <h3><i class="fa-solid fa-diagram-project"></i> Visual Flow Wisdom</h3>
-                            <ul style="font-size:0.85em; padding-left:15px; color:var(--text-muted); line-height:1.6;">
-                                <li><strong>Triggers:</strong> Manual is for testing. Schedule (Cron) is for production
-                                    workers.</li>
-                                <li><strong>Context passing:</strong> Use <code>{{last_result}}</code> to pipe data
-                                    between blocks.</li>
-                                <li><strong>AI Prompts:</strong> Don't just ask "Do this". Give the block a persona:
-                                    "You are a JSON formatter..."</li>
-                            </ul>
-                        </div>
-
-                        <!-- Troubleshooting -->
-                        <div class="card">
-                            <h3><i class="fa-solid fa-wrench"></i> Troubleshooting Keys</h3>
-                            <ul style="font-size:0.85em; padding-left:15px; color:var(--text-muted); line-height:1.6;">
-                                <li><strong>Nvidia Error?</strong> Ensure your key starts with <code>nvapi-</code>.</li>
-                                <li><strong>OpenAI failing?</strong> Check if your credits are exhausted.</li>
-                                <li><strong>Local AI Not Found?</strong> Ensure Ollama is running on your machine (port
-                                    11434).</li>
-                            </ul>
+                        <!-- 3. ADVANCED FLAVOURS & TIPS -->
+                        <div class="card"
+                            style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(83, 82, 237, 0.1), rgba(46, 213, 115, 0.1)); border: 1px dashed var(--accent-light);">
+                            <h2 style="display:flex; align-items:center; gap:12px; margin-bottom: 15px;">
+                                <i class="fa-solid fa-wand-magic-sparkles" style="color: #ffa502;"></i>
+                                Master Tips from the Wolfclaw Team
+                            </h2>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                                <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 12px;">
+                                    <h4 style="margin-bottom:10px;"><i class="fa-solid fa-rocket"></i> Speeding up Your
+                                        Fleet</h4>
+                                    <p style="font-size: 13px; color: var(--text-muted); line-height:1.6;">Use **Nvidia
+                                        NIM** for the absolute fastest response times. It feels like the AI is thinking
+                                        ahead of you. If you are on a limited connection, try the **Mistral**
+                                        models—they are incredibly efficient yet smart.</p>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 12px;">
+                                    <h4 style="margin-bottom:10px;"><i class="fa-solid fa-shield-virus"></i> Staying
+                                        Secure</h4>
+                                    <p style="font-size: 13px; color: var(--text-muted); line-height:1.6;">Don't want to
+                                        use API keys? No problem. Download **Ollama**, start it, and Wolfclaw will
+                                        automatically find it. Select `Llama 3.2` and enjoy 100% private, free AI that
+                                        never leaves your machine.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

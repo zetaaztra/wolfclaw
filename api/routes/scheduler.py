@@ -7,11 +7,13 @@ Create, manage, and execute recurring AI tasks.
 import os
 import threading
 import logging
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
 from core import local_db
 from core.bot_manager import _get_active_workspace_id
+
+from api.auth import get_current_user
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/scheduler", tags=["Scheduler"])
@@ -38,12 +40,12 @@ class UpdateTaskRequest(BaseModel):
 # ─────────── CRUD ───────────
 
 @router.post("/tasks")
-async def create_task(req: CreateTaskRequest):
+async def create_task(req: CreateTaskRequest, user: dict = Depends(get_current_user)):
     """Create a new scheduled task."""
     if os.environ.get("WOLFCLAW_ENVIRONMENT") != "desktop":
         raise HTTPException(status_code=403, detail="Restricted to Desktop.")
     try:
-        ws_id = _get_active_workspace_id()
+        ws_id = _get_active_workspace_id(user_id=user["id"])
         task_id = local_db.create_scheduled_task(
             ws_id=ws_id,
             bot_id=req.bot_id,
@@ -62,10 +64,10 @@ async def create_task(req: CreateTaskRequest):
 
 
 @router.get("/tasks")
-async def list_tasks():
+async def list_tasks(user: dict = Depends(get_current_user)):
     """List all scheduled tasks."""
     try:
-        ws_id = _get_active_workspace_id()
+        ws_id = _get_active_workspace_id(user_id=user["id"])
         tasks = local_db.get_scheduled_tasks(ws_id)
         return {"status": "success", "tasks": tasks}
     except Exception as e:
@@ -73,7 +75,7 @@ async def list_tasks():
 
 
 @router.put("/tasks/{task_id}")
-async def update_task(task_id: str, req: UpdateTaskRequest):
+async def update_task(task_id: str, req: UpdateTaskRequest, user: dict = Depends(get_current_user)):
     """Update a scheduled task."""
     try:
         updates = {k: v for k, v in req.dict().items() if v is not None}
@@ -86,7 +88,7 @@ async def update_task(task_id: str, req: UpdateTaskRequest):
 
 
 @router.delete("/tasks/{task_id}")
-async def delete_task(task_id: str):
+async def delete_task(task_id: str, user: dict = Depends(get_current_user)):
     """Delete a scheduled task."""
     try:
         _unregister_task(task_id)
@@ -97,7 +99,7 @@ async def delete_task(task_id: str):
 
 
 @router.post("/tasks/{task_id}/run")
-async def run_task_now(task_id: str):
+async def run_task_now(task_id: str, user: dict = Depends(get_current_user)):
     """Manually trigger a task immediately."""
     try:
         task = local_db.get_scheduled_task(task_id)
@@ -116,7 +118,7 @@ async def run_task_now(task_id: str):
 
 
 @router.get("/tasks/{task_id}/results")
-async def get_task_results(task_id: str):
+async def get_task_results(task_id: str, user: dict = Depends(get_current_user)):
     """Get execution history for a task."""
     try:
         results = local_db.get_task_results(task_id)
@@ -230,7 +232,8 @@ def _execute_task(task: dict):
         from core.llm_engine import WolfEngine
         from core import bot_manager
         
-        bots = bot_manager.get_bots()
+        from core.config import get_current_user_id
+        bots = bot_manager.get_bots(user_id=get_current_user_id())
         bot_id = task['bot_id']
         
         if bot_id not in bots:

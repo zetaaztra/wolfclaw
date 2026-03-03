@@ -73,6 +73,7 @@ async def upload_document(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
 @router.get("/")
+@router.get("")
 async def list_documents():
     """List all documents in the active workspace."""
     if os.environ.get("WOLFCLAW_ENVIRONMENT") != "desktop":

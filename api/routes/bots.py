@@ -23,6 +23,7 @@ class ProfileUpdateRequest(BaseModel):
     content: str
 
 @router.get("")
+@router.get("/")
 async def list_bots(user: dict = Depends(get_current_user)):
     """List all bots in the workspace (Local Desktop Mode only)"""
     if os.environ.get("WOLFCLAW_ENVIRONMENT") != "desktop":

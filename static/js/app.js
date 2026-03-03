@@ -267,7 +267,7 @@ async function handleRecovery(e) {
 // ==========================================
 
 async function loadBots() {
-    const resp = await fetch(`${API_BASE}/bots/`, {
+    const resp = await fetch(`${API_BASE}/bots`, {
         headers: getAuthHeader()
     });
     const data = await resp.json();
@@ -1118,7 +1118,9 @@ function appendEmbeddedBubble(role, content, isStandard = true) {
 
 async function loadProfileBots() {
     try {
-        const resp = await fetch(`${API_BASE}/chat/bots`);
+        const resp = await fetch(`${API_BASE}/chat/bots`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         if (resp.ok) {
             const select = document.getElementById('profile-bot-select');
@@ -1410,7 +1412,9 @@ async function deployTemplate(templateId) {
 
 async function loadChannelBots() {
     try {
-        const resp = await fetch(`${API_BASE}/chat/bots`);
+        const resp = await fetch(`${API_BASE}/chat/bots`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         if (resp.ok) {
             const select = document.getElementById('tg-bot-select');
@@ -1629,7 +1633,7 @@ async function loadDashboard() {
 async function loadDashboardExtras() {
     // Load API key count
     try {
-        const resp = await fetch(`${API_BASE}/settings/`, {
+        const resp = await fetch(`${API_BASE}/settings`, {
             headers: getAuthHeader()
         });
         const data = await resp.json();
@@ -1659,7 +1663,7 @@ async function loadDashboardExtras() {
 
 async function loadSettings() {
     try {
-        const resp = await fetch(`${API_BASE}/settings/`, {
+        const resp = await fetch(`${API_BASE}/settings`, {
             headers: getAuthHeader()
         });
         const data = await resp.json();
@@ -1719,7 +1723,7 @@ async function saveCustomProvider() {
     if (!name || !key) return alert('Please enter both a provider name and API key.');
 
     try {
-        const resp = await fetch(`${API_BASE}/settings/`, {
+        const resp = await fetch(`${API_BASE}/settings`, {
             method: 'POST',
             headers: {
                 ...getAuthHeader(),
@@ -1749,7 +1753,7 @@ async function handleSaveApiKey(e) {
 
     if (!key) return;
 
-    const resp = await fetch(`${API_BASE}/settings/`, {
+    const resp = await fetch(`${API_BASE}/settings`, {
         method: 'POST',
         headers: {
             ...getAuthHeader(),
@@ -1858,7 +1862,7 @@ async function clearApiKey(provider) {
     if (!confirm(`Clear your ${provider} API key?`)) return;
 
     try {
-        const resp = await fetch(`${API_BASE}/settings/`, {
+        const resp = await fetch(`${API_BASE}/settings`, {
             method: 'DELETE',
             headers: {
                 ...getAuthHeader(),
@@ -2085,7 +2089,9 @@ async function loadWorkspaceDocuments() {
     if (!docSelect) return;
 
     try {
-        const resp = await fetch(`${API_BASE}/documents/`);
+        const resp = await fetch(`${API_BASE}/documents`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
 
         if (resp.ok) {
@@ -2124,7 +2130,9 @@ async function loadChatHistorySidebar() {
     if (!listEl) return;
 
     try {
-        const resp = await fetch(`${API_BASE}/history/`);
+        const resp = await fetch(`${API_BASE}/history`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
 
         if (resp.ok) {
@@ -2278,7 +2286,9 @@ async function loadBotKnowledge() {
     contentDiv.classList.remove('hidden');
 
     try {
-        const resp = await fetch(`${API_BASE}/knowledge/${botId}`);
+        const resp = await fetch(`${API_BASE}/knowledge/${botId}`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         const listEl = document.getElementById('kb-doc-list');
 
@@ -2402,7 +2412,9 @@ async function loadScheduledTasks() {
     if (!listEl) return;
 
     try {
-        const resp = await fetch(`${API_BASE}/scheduler/tasks`);
+        const resp = await fetch(`${API_BASE}/scheduler/tasks`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
 
         if (resp.ok && data.tasks && data.tasks.length > 0) {
@@ -2442,7 +2454,10 @@ async function loadScheduledTasks() {
 
 async function runTaskNow(taskId) {
     try {
-        const resp = await fetch(`${API_BASE}/scheduler/tasks/${taskId}/run`, { method: 'POST' });
+        const resp = await fetch(`${API_BASE}/scheduler/tasks/${taskId}/run`, {
+            method: 'POST',
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         alert(data.message || 'Task triggered!');
         setTimeout(loadScheduledTasks, 2000);
@@ -2453,7 +2468,9 @@ async function runTaskNow(taskId) {
 
 async function viewTaskResults(taskId) {
     try {
-        const resp = await fetch(`${API_BASE}/scheduler/tasks/${taskId}/results`);
+        const resp = await fetch(`${API_BASE}/scheduler/tasks/${taskId}/results`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
 
         if (resp.ok && data.results && data.results.length > 0) {
@@ -2482,7 +2499,10 @@ async function viewTaskResults(taskId) {
 async function deleteScheduledTask(taskId) {
     if (!confirm('Delete this scheduled task?')) return;
     try {
-        await fetch(`${API_BASE}/scheduler/tasks/${taskId}`, { method: 'DELETE' });
+        await fetch(`${API_BASE}/scheduler/tasks/${taskId}`, {
+            method: 'DELETE',
+            headers: getAuthHeader()
+        });
         loadScheduledTasks();
     } catch (err) {
         alert('Failed to delete.');
@@ -2704,7 +2724,9 @@ let warRoomSubBotIds = [];
 
 async function loadWarRoomBots() {
     try {
-        const resp = await fetch(`${API_BASE}/chat/bots`);
+        const resp = await fetch(`${API_BASE}/chat/bots`, {
+            headers: getAuthHeader()
+        });
         const data = await resp.json();
         if (resp.ok) {
             const managerSelect = document.getElementById('warroom-manager-select');
@@ -2784,7 +2806,10 @@ async function sendWarRoomMessage() {
     try {
         const resp = await fetch(`${API_BASE}/chat/warroom/send`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
                 manager_bot_id: warRoomManagerId,
                 sub_bot_ids: warRoomSubBotIds,
@@ -2880,7 +2905,9 @@ let flowBlockCatalog = [];   // Block types from API
 async function loadFlowsView() {
     // Load the list of flows
     try {
-        const res = await fetch(`${API_BASE}/flows`);
+        const res = await fetch(`${API_BASE}/flows`, {
+            headers: getAuthHeader()
+        });
         const data = await res.json();
         renderFlowList(data.flows || []);
     } catch (e) {
@@ -3488,7 +3515,7 @@ async function toggleMacroRecording() {
 
                     // Create a flow with this data
                     const flowDatObj = typeof anData.flow_data.flow_data === 'string' ? JSON.parse(anData.flow_data.flow_data) : anData.flow_data.flow_data;
-                    const createRes = await fetch(`${API_BASE}/flows/`, {
+                    const createRes = await fetch(`${API_BASE}/flows`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -4286,7 +4313,7 @@ async function loadWalletBotsDropdown() {
     if (Object.keys(activeBots).length === 0) {
         // Fetch them if not
         try {
-            const resp = await fetch(`${API_BASE}/bots/`);
+            const resp = await fetch(`${API_BASE}/bots`, { headers: getAuthHeader() });
             const data = await resp.json();
             if (resp.ok && data.bots) {
                 activeBots = data.bots;
@@ -4435,7 +4462,7 @@ async function loadMagicFlowToCanvas() {
     if (!window._lastMagicFlow) return alert("Generate a Magic Flow first!");
 
     try {
-        const resp = await fetch(`${API_BASE}/flows/`, {
+        const resp = await fetch(`${API_BASE}/flows`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
             body: JSON.stringify({

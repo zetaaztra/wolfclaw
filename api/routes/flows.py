@@ -38,6 +38,7 @@ async def get_block_catalog():
 # ─────────── FLOW CRUD ───────────
 
 @router.get("")
+@router.get("/")
 async def list_flows(user: dict = Depends(get_current_user)):
     """List all flows for the current workspace."""
     ws_id = _get_active_workspace_id(user_id=user["id"])
@@ -46,6 +47,7 @@ async def list_flows(user: dict = Depends(get_current_user)):
 
 
 @router.post("")
+@router.post("/")
 async def create_flow(body: FlowCreate, user: dict = Depends(get_current_user)):
     """Create a new flow."""
     ws_id = _get_active_workspace_id(user_id=user["id"])

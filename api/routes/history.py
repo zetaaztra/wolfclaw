@@ -15,6 +15,7 @@ class SaveHistoryRequest(BaseModel):
     chat_id: Optional[str] = None
 
 @router.get("/")
+@router.get("")
 async def list_history():
     """List all chat histories for the active workspace."""
     ws_id = _get_active_workspace_id()
@@ -36,6 +37,7 @@ async def get_history(chat_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/")
+@router.post("")
 async def save_history(req: SaveHistoryRequest):
     """Save or update a chat history."""
     ws_id = _get_active_workspace_id()

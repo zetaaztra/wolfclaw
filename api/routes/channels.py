@@ -64,7 +64,7 @@ async def start_telegram_worker(req: TelegramStartRequest):
 
     try:
         # Get bot data
-        bots = bot_manager.get_bots()
+        bots = bot_manager.get_bots(user_id=get_current_user_id())
         if req.bot_id not in bots:
             raise HTTPException(status_code=404, detail="Bot not found.")
         
