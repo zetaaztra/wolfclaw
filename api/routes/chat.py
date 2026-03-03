@@ -78,7 +78,8 @@ async def send_message(req: ChatRequest, user: dict = Depends(get_current_user))
         from core.llm_engine import WolfEngine
         engine = WolfEngine(
             bot["model"],
-            fallback_models=bot.get("fallback_models", [])
+            fallback_models=bot.get("fallback_models", []),
+            user_id=user["id"]
         )
         
         # Call the engine
@@ -114,7 +115,7 @@ async def send_message(req: ChatRequest, user: dict = Depends(get_current_user))
         # --- PHASE 11: Auto-save Chat History ---
         from core import local_db
         import json
-        ws_id = bot_manager._get_active_workspace_id()
+        ws_id = bot_manager._get_active_workspace_id(user_id=user["id"])
         
         # The title is just the first user message (truncated if needed)
         title = "New Chat"
@@ -146,7 +147,7 @@ async def send_message(req: ChatRequest, user: dict = Depends(get_current_user))
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/warroom/send")
-async def send_warroom_message(req: WarRoomRequest):
+async def send_warroom_message(req: WarRoomRequest, user: dict = Depends(get_current_user)):
     """Executes a multi-agent orchestrated chat sequence."""
     if os.environ.get("WOLFCLAW_ENVIRONMENT") != "desktop":
         raise HTTPException(status_code=403, detail="Route restricted to Desktop environment.")
@@ -156,7 +157,8 @@ async def send_warroom_message(req: WarRoomRequest):
         
         orchestrator = MultiAgentOrchestrator(
             manager_bot_id=req.manager_bot_id,
-            sub_bot_ids=req.sub_bot_ids
+            sub_bot_ids=req.sub_bot_ids,
+            user_id=user["id"]
         )
         
         # Get the latest user prompt

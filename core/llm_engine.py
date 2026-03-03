@@ -27,7 +27,8 @@ class WolfEngine:
     Automatically detects local Ollama instances.
     """
 
-    def __init__(self, model_name: str, fallback_models: list = None):
+    def __init__(self, model_name: str, fallback_models: list = None, user_id: str = None):
+        self.user_id = user_id
         self.model_name = self._detect_local_model(model_name)
         self.fallback_models = fallback_models or []
 
@@ -130,7 +131,7 @@ class WolfEngine:
             if "llama" in actual_model and "/" not in actual_model:
                 actual_model = f"meta/{actual_model}"
             kwargs["model"] = f"nvidia_nim/{actual_model}"
-            key = decrypt_key("nvidia") or get_key("nvidia")
+            key = decrypt_key("nvidia", user_id=self.user_id) or get_key("nvidia", user_id=self.user_id)
             kwargs["api_key"] = key
             os.environ["NVIDIA_NIM_API_KEY"] = key
             kwargs["parallel_tool_calls"] = False
@@ -138,22 +139,22 @@ class WolfEngine:
             actual_model = model.replace("deepseek/", "")
             kwargs["model"] = f"openai/{actual_model}"
             kwargs["api_base"] = "https://api.deepseek.com/v1"
-            key = decrypt_key("deepseek") or get_key("deepseek")
+            key = decrypt_key("deepseek", user_id=self.user_id) or get_key("deepseek", user_id=self.user_id)
             kwargs["api_key"] = key
             os.environ["DEEPSEEK_API_KEY"] = key
 
         else:
             kwargs["model"] = model
             if model.startswith("gpt"):
-                key = decrypt_key("openai") or get_key("openai")
+                key = decrypt_key("openai", user_id=self.user_id) or get_key("openai", user_id=self.user_id)
                 kwargs["api_key"] = key
                 os.environ["OPENAI_API_KEY"] = key
             elif model.startswith("claude"):
-                key = decrypt_key("anthropic") or get_key("anthropic")
+                key = decrypt_key("anthropic", user_id=self.user_id) or get_key("anthropic", user_id=self.user_id)
                 kwargs["api_key"] = key
                 os.environ["ANTHROPIC_API_KEY"] = key
             elif model.startswith("gemini"):
-                key = decrypt_key("google") or get_key("google")
+                key = decrypt_key("google", user_id=self.user_id) or get_key("google", user_id=self.user_id)
                 kwargs["api_key"] = key
                 os.environ["GEMINI_API_KEY"] = key
             elif model.startswith("ollama"):
@@ -358,8 +359,7 @@ class WolfEngine:
                         import time as _time_mod
                         from core import local_db as _usage_db
                         from core.bot_manager import _get_active_workspace_id
-
-                        ws_id = _get_active_workspace_id()
+                        ws_id = _get_active_workspace_id(user_id=self.user_id)
                         usage = getattr(response, 'usage', None)
                         prompt_tokens = getattr(usage, 'prompt_tokens', 0) or 0
                         completion_tokens = getattr(usage, 'completion_tokens', 0) or 0

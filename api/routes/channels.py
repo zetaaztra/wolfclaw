@@ -11,6 +11,8 @@ from core import local_db, bot_manager
 from core.bot_manager import _get_active_workspace_id
 from core.config import get_current_user_id
 
+from api.deps import get_current_user
+
 router = APIRouter()
 
 # In-memory store for running Telegram workers
@@ -24,7 +26,7 @@ class TelegramStartRequest(BaseModel):
     bot_id: str
 
 @router.post("/telegram/save")
-async def save_telegram_token(req: TelegramSaveRequest):
+async def save_telegram_token(req: TelegramSaveRequest, user: dict = Depends(get_current_user)):
     """Save a Telegram Bot token for a specific bot"""
     if os.environ.get("WOLFCLAW_ENVIRONMENT") != "desktop":
         raise HTTPException(status_code=403, detail="Route restricted to Desktop environment.")
@@ -36,7 +38,7 @@ async def save_telegram_token(req: TelegramSaveRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/telegram/unlink")
-async def unlink_telegram_token(req: TelegramStartRequest):
+async def unlink_telegram_token(req: TelegramStartRequest, user: dict = Depends(get_current_user)):
     """Unlink a Telegram Bot token and stop any running worker"""
     if os.environ.get("WOLFCLAW_ENVIRONMENT") != "desktop":
         raise HTTPException(status_code=403, detail="Route restricted to Desktop environment.")
@@ -57,14 +59,14 @@ async def unlink_telegram_token(req: TelegramStartRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/telegram/start")
-async def start_telegram_worker(req: TelegramStartRequest):
+async def start_telegram_worker(req: TelegramStartRequest, user: dict = Depends(get_current_user)):
     """Start a local Telegram polling worker for the specified bot"""
     if os.environ.get("WOLFCLAW_ENVIRONMENT") != "desktop":
         raise HTTPException(status_code=403, detail="Route restricted to Desktop environment.")
 
     try:
         # Get bot data
-        bots = bot_manager.get_bots(user_id=get_current_user_id())
+        bots = bot_manager.get_bots(user_id=user["id"])
         if req.bot_id not in bots:
             raise HTTPException(status_code=404, detail="Bot not found.")
         
@@ -87,7 +89,7 @@ async def start_telegram_worker(req: TelegramStartRequest):
         env = os.environ.copy()
         
         # Inject the active user's ID into the worker environment so it can fetch the correct API keys
-        uid = get_current_user_id()
+        uid = user["id"]
         env["WOLFCLAW_WEBHOOK_USER_ID"] = uid
         
         env["TELEGRAM_TOKEN"] = tg_token
@@ -97,7 +99,7 @@ async def start_telegram_worker(req: TelegramStartRequest):
         env["WOLFCLAW_FALLBACKS"] = ",".join(bot_data.get("fallback_models", []))
         
         # Load SSH credentials into env for tool usage
-        workspace_id = _get_active_workspace_id()
+        workspace_id = _get_active_workspace_id(user_id=user["id"])
         ssh_data = local_db.get_workspace_ssh(workspace_id)
         env["WOLFCLAW_SSH_HOST"] = ssh_data.get("host", "")
         env["WOLFCLAW_SSH_PORT"] = str(ssh_data.get("port", "22"))
@@ -164,7 +166,7 @@ async def start_telegram_worker(req: TelegramStartRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/telegram/stop")
-async def stop_telegram_worker(req: TelegramStartRequest):
+async def stop_telegram_worker(req: TelegramStartRequest, user: dict = Depends(get_current_user)):
     """Stop a running Telegram worker"""
     if os.environ.get("WOLFCLAW_ENVIRONMENT") != "desktop":
         raise HTTPException(status_code=403, detail="Route restricted to Desktop environment.")
@@ -179,7 +181,7 @@ async def stop_telegram_worker(req: TelegramStartRequest):
     return {"status": "success", "message": "No worker was running."}
 
 @router.get("/telegram/status")
-async def telegram_status():
+async def telegram_status(user: dict = Depends(get_current_user)):
     """Get status of all Telegram workers"""
     if os.environ.get("WOLFCLAW_ENVIRONMENT") != "desktop":
         raise HTTPException(status_code=403, detail="Route restricted to Desktop environment.")

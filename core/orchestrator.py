@@ -12,12 +12,13 @@ class MultiAgentOrchestrator:
     A Manager bot receives the user prompt, analyzes it, and delegates
     sub-tasks to a list of available specialized bots.
     """
-    def __init__(self, manager_bot_id: str, sub_bot_ids: List[str]):
+    def __init__(self, manager_bot_id: str, sub_bot_ids: List[str], user_id: str = None):
+        self.user_id = user_id
         self.manager_bot_id = manager_bot_id
         self.sub_bot_ids = sub_bot_ids
         
         # Load bot profiles once
-        all_bots = get_bots()
+        all_bots = get_bots(user_id=user_id)
         self.manager_bot = all_bots.get(manager_bot_id)
         self.sub_bots = {bid: all_bots.get(bid) for bid in sub_bot_ids if bid in all_bots}
         
@@ -70,7 +71,11 @@ Format:
         })
         
         # Initialize Manager Engine
-        manager_engine = WolfEngine(self.manager_bot["model"], fallback_models=self.manager_bot.get("fallback_models", []))
+        manager_engine = WolfEngine(
+            self.manager_bot["model"], 
+            fallback_models=self.manager_bot.get("fallback_models", []),
+            user_id=self.user_id
+        )
         
         # Get Delegation Plan
         try:
@@ -121,7 +126,11 @@ Format:
             
             try:
                 # Initialize Sub-Agent Engine
-                agent_engine = WolfEngine(agent_profile["model"], fallback_models=agent_profile.get("fallback_models", []))
+                agent_engine = WolfEngine(
+                    agent_profile["model"], 
+                    fallback_models=agent_profile.get("fallback_models", []),
+                    user_id=self.user_id
+                )
                 
                 # Contextualize the sub-agent's prompt
                 agent_context = chat_history.copy()

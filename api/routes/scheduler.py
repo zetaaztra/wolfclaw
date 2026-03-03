@@ -144,7 +144,9 @@ def _get_scheduler():
             # Load and register all active tasks in a background thread
             def _load_all_tasks():
                 try:
-                    ws_id = _get_active_workspace_id()
+                    from core.config import get_current_user_id
+                    uid = get_current_user_id()
+                    ws_id = _get_active_workspace_id(user_id=uid)
                     tasks = local_db.get_scheduled_tasks(ws_id)
                     for task in tasks:
                         if task.get('is_active'):
@@ -233,7 +235,8 @@ def _execute_task(task: dict):
         from core import bot_manager
         
         from core.config import get_current_user_id
-        bots = bot_manager.get_bots(user_id=get_current_user_id())
+        uid = get_current_user_id()
+        bots = bot_manager.get_bots(user_id=uid)
         bot_id = task['bot_id']
         
         if bot_id not in bots:
@@ -241,7 +244,11 @@ def _execute_task(task: dict):
             return
         
         bot = bots[bot_id]
-        engine = WolfEngine(bot['model'], fallback_models=bot.get('fallback_models', []))
+        engine = WolfEngine(
+            bot['model'], 
+            fallback_models=bot.get('fallback_models', []),
+            user_id=uid
+        )
         
         messages = [{"role": "user", "content": task['prompt']}]
         response = engine.chat(
