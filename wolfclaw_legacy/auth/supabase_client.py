@@ -1,6 +1,4 @@
 import os
-from supabase import create_client, Client
-import streamlit as st
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,10 +7,15 @@ load_dotenv()
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
 
-def get_supabase_client() -> Client:
+def get_supabase_client():
+    from supabase import create_client, Client
     if not SUPABASE_URL or not SUPABASE_KEY:
-        st.error("Supabase credentials not found. Please set SUPABASE_URL and SUPABASE_KEY.")
-        st.stop()
+        try:
+            import streamlit as st
+            st.error("Supabase credentials not found. Please set SUPABASE_URL and SUPABASE_KEY.")
+            st.stop()
+        except Exception:
+            raise RuntimeError("Supabase credentials not found. Please set SUPABASE_URL and SUPABASE_KEY.")
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def login_user(email, password):
@@ -28,8 +31,12 @@ def login_user(email, password):
             class DummyUser: id = user["id"]
             class DummySession: access_token = "local_token"
             
-            st.session_state["user"] = DummyUser()
-            st.session_state["session"] = DummySession()
+            try:
+                import streamlit as st
+                st.session_state["user"] = DummyUser()
+                st.session_state["session"] = DummySession()
+            except:
+                pass
             return True, None
         return False, "Invalid credentials"
 
@@ -37,8 +44,12 @@ def login_user(email, password):
     try:
         response = client.auth.sign_in_with_password({"email": email, "password": password})
         if response.user:
-            st.session_state["user"] = response.user
-            st.session_state["session"] = response.session
+            try:
+                import streamlit as st
+                st.session_state["user"] = response.user
+                st.session_state["session"] = response.session
+            except:
+                pass
             return True, None
     except Exception as e:
         return False, str(e)
@@ -74,11 +85,35 @@ def logout_user():
         except:
             pass
             
-    st.session_state["user"] = None
-    st.session_state["session"] = None
+    try:
+        import streamlit as st
+        st.session_state["user"] = None
+        st.session_state["session"] = None
+    except:
+        pass
 
 def get_current_user():
-    return st.session_state.get("user")
+    # 1. Try Streamlit session state first
+    try:
+        import streamlit as st
+        user = st.session_state.get("user")
+        if user: return user
+    except:
+        pass
+    
+    # 2. If no memory state, check persistent local_db session
+    if os.environ.get("WOLFCLAW_ENVIRONMENT") == "desktop":
+        from core import local_db
+        conn = local_db._get_connection()
+        row = conn.execute("SELECT user_id FROM sessions ORDER BY created_at DESC LIMIT 1").fetchone()
+        conn.close()
+        
+        if row:
+            user_data = local_db.get_user_by_id(row["user_id"])
+            if user_data:
+                class DummyUser: id = user_data["id"]; email = user_data["email"]
+                return DummyUser()
+    return None
 
 def delete_account():
     """Wipes the user's data from Supabase public schemas. 

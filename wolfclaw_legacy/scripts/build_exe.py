@@ -9,6 +9,9 @@ def build_windows_exe():
     """Build the Wolfclaw Desktop Engine into a standalone Windows executable."""
     print("Building Wolfclaw Legacy for Windows 7/8...")
     
+    # Fix for PyInstaller's set_exe_build_timestamp OSError on --onefile builds
+    os.environ["SOURCE_DATE_EPOCH"] = "0"
+    
     project_root = Path(__file__).resolve().parent.parent
     launcher_script = project_root / "desktop_launcher.py"
     
