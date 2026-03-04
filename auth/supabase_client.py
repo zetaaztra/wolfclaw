@@ -1,6 +1,4 @@
 import os
-from supabase import create_client, Client
-import streamlit as st
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,10 +7,15 @@ load_dotenv()
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
 
-def get_supabase_client() -> Client:
+def get_supabase_client():
+    from supabase import create_client, Client
     if not SUPABASE_URL or not SUPABASE_KEY:
-        st.error("Supabase credentials not found. Please set SUPABASE_URL and SUPABASE_KEY.")
-        st.stop()
+        try:
+            import streamlit as st
+            st.error("Supabase credentials not found. Please set SUPABASE_URL and SUPABASE_KEY.")
+            st.stop()
+        except Exception:
+            raise RuntimeError("Supabase credentials not found. Please set SUPABASE_URL and SUPABASE_KEY.")
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def login_user(email, password):
